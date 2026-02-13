@@ -122,7 +122,7 @@ async function uploadToCloudinary(localPath, folder, resourceType = 'auto') {
 // --- AUTHENTICATION (Discord) ---
 const DISCORD_CLIENT_ID = process.env.CLIENT_ID;
 const DISCORD_CLIENT_SECRET = process.env.CLIENT_SECRET;
-const DISCORD_REDIRECT_URI = 'http://localhost:3000/auth/discord/callback';
+const DISCORD_REDIRECT_URI = 'https://realistic-portfolio.onrender.com/';
 
 const requireAdmin = (req, res, next) => {
     if (!req.session.user?.isAdmin) return res.status(403).json({ error: 'Unauthorized' });
