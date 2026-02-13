@@ -1,1 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AXEL | Digital Architect</title>
+    <link id="favicon" rel="icon" href="/favicon.ico?v=4">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&family=Space+Grotesk:wght@300;400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
+    <script>
+        const savedTheme = localStorage.getItem('axel_theme');
+        if(savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['Outfit', 'sans-serif'], 
+                        mono: ['JetBrains Mono', 'monospace'],
+                        display: ['Space Grotesk', 'sans-serif']
+                    },
+                    colors: { 
+                        dark: 'var(--bg-main)', 
+                        card: 'var(--bg-card)', 
+                        brand: {
+                            50: 'var(--brand-50)', 100: 'var(--brand-100)', 400: 'var(--brand-400)', 
+                            500: 'var(--brand-500)', 600: 'var(--brand-600)'
+                        },
+                        accent: 'var(--accent)'
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'scanline': 'scanline 8s linear infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* --- THEME ENGINE --- */
+        :root {
+            --bg-main: #030303;
+            --bg-card: #0A0A0A;
+            --brand-50: #eff6ff; --brand-100: #dbeafe;
+            --brand-400: #60a5fa; --brand-500: #3b82f6; --brand-600: #2563eb;
+            --accent: #ff0055;
+            --cursor-color: #3b82f6;
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --gradient-rez: linear-gradient(to right, #60a5fa, #ffffff, #ff0055);
+            --view-count-color: #ffffff;
+            --glass-bg: rgba(10, 10, 10, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        html[data-theme="snow"], body[data-theme="snow"] {
+            --bg-main: #f0f4f8;
+            --bg-card: #ffffff;
+            --brand-50: #f0f9ff; --brand-100: #e0f2fe;
+            --brand-400: #38bdf8; --brand-500: #0ea5e9; --brand-600: #0284c7;
+            --accent: #6366f1;
+            --cursor-color: #0ea5e9;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --gradient-rez: linear-gradient(to right, #38bdf8, #6366f1, #0284c7);
+            --view-count-color: #000000;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(0, 0, 0, 0.05);
+        }
+
+        html[data-theme="toxic"], body[data-theme="toxic"] {
+            --bg-main: #0d0414;
+            --bg-card: #180824;
+            --brand-50: #faf5ff; --brand-100: #f3e8ff;
+            --brand-400: #c084fc; --brand-500: #a855f7; --brand-600: #9333ea;
+            --accent: #39ff14;
+            --cursor-color: #39ff14;
+            --text-main: #f3f4f6;
+            --text-muted: #a1a1aa;
+            --gradient-rez: linear-gradient(to right, #a855f7, #39ff14, #d946ef);
+            --view-count-color: #39ff14;
+            --glass-bg: rgba(24, 8, 36, 0.7);
+            --glass-border: rgba(168, 85, 247, 0.2);
+        }
+
+        /* --- UTILS --- */
+        * { cursor: none !important; -webkit-user-select: none; user-select: none; }
+        input, textarea, [contenteditable] { -webkit-user-select: text; user-select: text; }
+        
+        body { 
+            background-color: var(--bg-main); 
+            color: var(--text-main); 
+            overflow-x: hidden; 
+            scrollbar-gutter: stable; 
+            transition: background-color 0.5s, color 0.5s; 
+        }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-main); }
+        ::-webkit-scrollbar-thumb { background: var(--brand-500); border-radius: 10px; }
+
+        .glass { background: var(--glass-bg); backdrop-filter: blur(12px) saturate(180%); border: 1px solid var(--glass-border); }
+
+        /* --- MASONRY & EDIT MODE PHYSICS --- */
+        
+        /* 1. Default View */
+        .masonry-grid { 
+            column-count: 1; 
+            column-gap: 2rem; 
+            transition: opacity 0.3s ease;
+        }
+        @media (min-width: 768px) { .masonry-grid { column-count: 2; } }
+        @media (min-width: 1280px) { .masonry-grid { column-count: 3; } }
+        
+        .masonry-item { 
+            break-inside: avoid; 
+            margin-bottom: 2rem; 
+            transform: translateZ(0);
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
+        }
+        
+        /* 2. Edit Mode */
+        body.edit-mode .masonry-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            column-count: auto; 
+            align-items: start; 
+        }
+        @media (min-width: 768px) {
+            body.edit-mode .masonry-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (min-width: 1280px) {
+            body.edit-mode .masonry-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        
+        /* OVERRIDE AOS FADE IN EDIT MODE */
+        /* This ensures no items fade out or hide when you start editing */
+        body.edit-mode [data-aos] {
+            opacity: 1 !important;
+            transform: none !important;
+            transition-property: none !important;
+        }
+
+        body.edit-mode .masonry-item {
+            margin-bottom: 0;
+            cursor: grab !important;
+            border: 1px dashed var(--brand-500);
+            background: rgba(59, 130, 246, 0.05);
+            pointer-events: auto;
+        }
+        
+        /* 3. THE GHOST (Empty Slot) */
+        .sortable-ghost { 
+            opacity: 0.1 !important;
+            background: var(--brand-500) !important;
+            border: 2px dashed var(--brand-500) !important;
+            border-radius: 2rem;
+        }
+        .sortable-ghost > * { visibility: hidden; } /* Hide content of the hole */
+
+        /* 4. THE DRAG PREVIEW (Flying Item) */
+        .sortable-drag { 
+            opacity: 1 !important; 
+            z-index: 99999 !important; 
+            cursor: grabbing !important;
+            position: fixed !important; /* Force it to follow viewport/mouse */
+            pointer-events: none !important; /* Let mouse pass through to grid below */
+            
+            /* Initial Lift State - JS adds rotation */
+            box-shadow: 
+                0 25px 50px -12px rgba(0,0,0,0.5),
+                0 0 0 2px var(--brand-500);
+            background: var(--bg-card); 
+            border-radius: 2rem;
+            overflow: hidden;
+            transform-origin: center center;
+        }
+
+        /* --- GLOBAL FX --- */
+        .scanline-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.1) 51%); background-size: 100% 4px; z-index: 99; pointer-events: none; }
+        .bg-mesh { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(at 0% 0%, var(--brand-500) 0, transparent 50%), radial-gradient(at 100% 100%, var(--accent) 0, transparent 50%); opacity: 0.15; z-index: -1; }
+        
+        /* Cursor */
+        .cursor-dot { width: 8px; height: 8px; background: var(--cursor-color); position: fixed; top: 0; left: 0; border-radius: 50%; z-index: 999999; pointer-events: none; transform: translate(-50%, -50%); transition: width 0.2s, height 0.2s, background 0.2s, border-radius 0.2s; box-shadow: 0 0 10px var(--cursor-color); }
+        .cursor-trail { width: 40px; height: 40px; border: 1px solid var(--cursor-color); position: fixed; top: 0; left: 0; border-radius: 50%; z-index: 999998; pointer-events: none; transform: translate(-50%, -50%); transition: transform 0.1s ease-out, background 0.2s; opacity: 0.5; }
+        body.hovering .cursor-dot { width: 12px; height: 12px; background: var(--accent); box-shadow: 0 0 15px var(--accent); }
+        body.hovering .cursor-trail { background: rgba(255, 255, 255, 0.1); border-color: var(--accent); transform: translate(-50%, -50%) scale(1.5); }
+        
+        /* Hide cursor when dragging to avoid double cursor */
+        body.is-dragging .cursor-dot, 
+        body.is-dragging .cursor-trail { opacity: 0; }
+
+        .rez-gradient { background-image: var(--gradient-rez); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        
+        .typewriter-cursor::after {
+            content: '|';
+            animation: blink 1s step-end infinite;
+            color: var(--brand-500);
+            margin-left: 2px;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        @keyframes scanline { 0% { background-position: 0% 0%; } 100% { background-position: 0% 100%; } }
+        
+        /* Modal */
+        #confirmModal.hidden { opacity: 0; pointer-events: none; transform: scale(0.95); }
+        #confirmModal:not(.hidden) { opacity: 1; pointer-events: auto; transform: scale(1); }
+    </style>
+</head>
+<body class="antialiased selection:bg-brand-500 selection:text-white" data-theme="">
+
+    <div class="cursor-dot" id="cursor-dot"></div>
+    <div class="cursor-trail" id="cursor-trail"></div>
+    <div class="bg-mesh"></div>
+    <div class="scanline-overlay animate-scanline"></div>
+
+    <div id="confirmModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm transition-all duration-300 hidden">
+        <div class="bg-[var(--bg-card)] border border-[var(--brand-500)] p-8 rounded-2xl max-w-sm w-full mx-6 shadow-[0_0_50px_rgba(59,130,246,0.2)] text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-[var(--brand-500)]"></div>
+            <h3 class="text-xl font-bold font-mono uppercase mb-4 text-[var(--text-main)]">System Alert</h3>
+            <p id="confirmMessage" class="text-[var(--text-muted)] text-sm mb-8">Are you sure you want to proceed?</p>
+            <div class="flex gap-4 justify-center">
+                <button id="confirmCancel" class="px-6 py-3 rounded-xl border border-white/10 text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 interactable">Cancel</button>
+                <button id="confirmYes" class="px-6 py-3 rounded-xl bg-[var(--brand-500)] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-[var(--brand-600)] shadow-lg interactable">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="enterScreen" class="fixed inset-0 z-[200] bg-[var(--bg-main)] flex flex-col items-center justify-center transition-all duration-1000">
+        <canvas id="matrixCanvas" class="absolute inset-0 opacity-20"></canvas>
+        <div class="relative z-10 flex flex-col items-center gap-8">
+            <div class="flex flex-col items-center gap-2">
+                <span id="bootText" class="text-[var(--brand-500)] text-[10px] tracking-[0.5em] font-mono uppercase animate-pulse">System Booting...</span>
+                <div class="w-64 h-1 bg-white/10 rounded-full overflow-hidden">
+                    <div id="bootProgress" class="h-full bg-[var(--brand-500)] w-0 transition-all duration-300"></div>
+                </div>
+            </div>
+            <button id="enterBtn" onclick="enterSite()" disabled class="opacity-0 translate-y-4 group relative px-12 py-4 bg-transparent border border-[var(--brand-500)] rounded-xl overflow-hidden transition-all duration-700 interactable disabled:cursor-not-allowed">
+                <div class="absolute inset-0 bg-[var(--brand-500)] opacity-10 group-hover:opacity-20 transition-opacity"></div>
+                <div class="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000"></div>
+                <span class="relative text-[var(--text-main)] text-xs font-black tracking-[0.3em] font-mono uppercase group-hover:text-[var(--brand-500)] transition-colors">Initialize</span>
+            </button>
+        </div>
+    </div>
+
+    <nav class="fixed top-0 w-full z-[100] transition-all duration-500 backdrop-blur-md bg-dark/50 border-b border-white/5" id="mainNav">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="h-24 flex items-center justify-between">
+                <a href="#home" class="w-[200px] text-2xl font-black tracking-tighter group interactable flex items-baseline shrink-0">
+                    <span class="text-[var(--text-main)]">AXEL</span>
+                    <span class="text-brand-500 ml-1 typewriter-cursor group-hover:text-accent transition-colors duration-500 whitespace-nowrap" id="logo-suffix">.BOTS</span>
+                </a>
+                <div class="hidden md:flex gap-12 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)]">
+                    <a href="#home" class="hover:text-brand-500 transition-all hover:tracking-[0.3em] interactable">Home</a>
+                    <a href="#work" class="hover:text-brand-500 transition-all hover:tracking-[0.3em] interactable">Vault</a>
+                    <a href="#reviews" class="hover:text-brand-500 transition-all hover:tracking-[0.3em] interactable">Intel</a>
+                    <a href="#pricing" class="hover:text-brand-500 transition-all hover:tracking-[0.3em] interactable">Service</a>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div id="authContainer" class="flex gap-4 items-center"></div>
+                    <button onclick="toggleMobileMenu()" class="md:hidden interactable w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-[var(--text-main)]">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="mobileMenu" class="md:hidden absolute top-24 left-0 w-full bg-[var(--bg-main)] border-b border-white/10 overflow-hidden h-0 transition-all duration-500 z-50 shadow-2xl">
+            <div class="flex flex-col p-6 gap-6 text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--text-main)]">
+                <a href="#home" onclick="toggleMobileMenu()" class="py-2 border-b border-white/5">Home</a>
+                <a href="#work" onclick="toggleMobileMenu()" class="py-2 border-b border-white/5">Vault</a>
+                <a href="#reviews" onclick="toggleMobileMenu()" class="py-2 border-b border-white/5">Intel</a>
+                <a href="#pricing" onclick="toggleMobileMenu()" class="py-2 border-b border-white/5">Service</a>
+            </div>
+        </div>
+    </nav>
+
+    <div id="adminOverlay" class="fixed inset-0 z-[110] bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-500" onclick="toggleAdmin()"></div>
+    <div id="adminDrawer" class="fixed top-0 right-0 h-full w-full md:w-[550px] glass z-[120] translate-x-full transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col">
+        <div class="h-24 border-b border-white/10 flex items-center justify-between px-10 flex-shrink-0">
+            <h2 class="font-mono text-sm tracking-widest uppercase text-[var(--text-main)]"><i class="fa-solid fa-terminal mr-2 text-brand-500"></i> Root Access</h2>
+            <button onclick="toggleAdmin()" class="interactable w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
+                <i class="fa-solid fa-xmark text-[var(--text-main)]"></i>
+            </button>
+        </div>
+        
+        <div class="px-10 py-6 border-b border-white/5">
+            <div class="flex gap-2 p-1 bg-white/5 rounded-xl border border-white/5">
+                <button onclick="switchTab(0)" class="admin-tab-btn active interactable flex-1 py-2 text-[9px] uppercase font-bold tracking-widest rounded-lg bg-brand-500 text-white transition-all">Project</button>
+                <button onclick="switchTab(1)" class="admin-tab-btn interactable flex-1 py-2 text-[9px] uppercase font-bold tracking-widest rounded-lg text-gray-500 hover:text-white transition-all">Music</button>
+                <button onclick="switchTab(2)" class="admin-tab-btn interactable flex-1 py-2 text-[9px] uppercase font-bold tracking-widest rounded-lg text-gray-500 hover:text-white transition-all">Review</button>
+                <button onclick="switchTab(3)" class="admin-tab-btn interactable flex-1 py-2 text-[9px] uppercase font-bold tracking-widest rounded-lg text-gray-500 hover:text-white transition-all">Sys.</button>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-hidden relative">
+            <div id="slider-track" class="flex h-full transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] w-full">
+                <div class="w-full flex-shrink-0 h-full overflow-y-auto p-10 space-y-8">
+                    <form onsubmit="handleUpload(event, '/api/projects', 'projects')" class="space-y-6">
+                        <p class="text-[10px] font-mono uppercase text-brand-500">New Entry</p>
+                        <input type="text" name="title" required placeholder="PROJECT_NAME" class="interactable w-full bg-white/5 border border-white/10 rounded-xl p-4 font-mono text-xs focus:border-brand-500 outline-none text-[var(--text-main)]">
+                        <label class="interactable group relative w-full h-40 rounded-2xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center cursor-pointer hover:border-brand-500/50 hover:bg-brand-500/5 transition-all">
+                            <input type="file" name="image" required class="hidden" onchange="previewFile(this, 'proj-preview')">
+                            <img id="proj-preview" class="absolute inset-0 w-full h-full object-cover rounded-2xl opacity-0 transition-opacity">
+                            <i class="fa-solid fa-upload text-xl text-gray-600 mb-2"></i>
+                            <span class="text-[9px] font-mono uppercase tracking-widest text-gray-500">Upload Visual</span>
+                        </label>
+                        <button type="submit" class="interactable w-full py-4 bg-[var(--text-main)] text-[var(--bg-main)] font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-brand-500 hover:text-white transition-all">Commit to Vault</button>
+                    </form>
+                    <div class="pt-8 border-t border-white/10">
+                        <p class="text-[10px] font-mono uppercase text-gray-500 mb-4">Quick Deletion</p>
+                        <div id="admin-projects-list" class="space-y-2"></div>
+                    </div>
+                </div>
+                <div class="w-full flex-shrink-0 h-full overflow-y-auto p-10 space-y-6">
+                    <form onsubmit="handleUpload(event, '/api/music', 'music')" class="space-y-6">
+                        <p class="text-[10px] font-mono uppercase text-brand-500">Transmission</p>
+                        <input type="text" name="title" required placeholder="TRACK_TITLE" class="interactable w-full bg-white/5 border border-white/10 rounded-xl p-4 font-mono text-xs focus:border-brand-500 outline-none text-[var(--text-main)]">
+                        <input type="text" name="artist" required placeholder="ARTIST_ID" class="interactable w-full bg-white/5 border border-white/10 rounded-xl p-4 font-mono text-xs focus:border-brand-500 outline-none text-[var(--text-main)]">
+                        <div class="flex gap-4">
+                            <label class="interactable flex-1 relative h-32 rounded-xl border border-dashed border-white/10 flex flex-col items-center justify-center cursor-pointer hover:border-brand-500">
+                                <input type="file" name="cover" class="hidden" onchange="previewFile(this, 'music-preview')">
+                                <img id="music-preview" class="absolute inset-0 w-full h-full object-cover rounded-xl opacity-0 transition-opacity">
+                                <span class="text-[8px] font-mono uppercase text-gray-500">Cover</span>
+                            </label>
+                            <label class="interactable flex-1 h-32 rounded-xl border border-white/10 bg-white/5 flex flex-col items-center justify-center cursor-pointer hover:border-brand-500 relative">
+                                <input type="file" name="audio" required accept="audio/*,video/mp4" class="absolute inset-0 opacity-0 cursor-pointer">
+                                <i class="fa-solid fa-music text-gray-500 mb-2"></i>
+                                <span class="text-[8px] font-mono uppercase text-gray-500 text-center">MP3/MP4<br>(Max 3GB)</span>
+                            </label>
+                        </div>
+                        <button type="submit" class="interactable w-full py-4 bg-[var(--text-main)] text-[var(--bg-main)] font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-brand-500 hover:text-white transition-all">Upload Frequency</button>
+                    </form>
+                    <div class="pt-8 border-t border-white/10">
+                        <p class="text-[10px] font-mono uppercase text-gray-500 mb-4">Quick Deletion</p>
+                        <div id="admin-music-list" class="space-y-2"></div>
+                    </div>
+                </div>
+                <div class="w-full flex-shrink-0 h-full overflow-y-auto p-10 space-y-6">
+                    <form onsubmit="handleUpload(event, '/api/reviews', 'reviews')" class="space-y-6">
+                        <p class="text-[10px] font-mono uppercase text-brand-500">Client Log</p>
+                        <input type="text" name="name" required placeholder="CLIENT_ID" class="interactable w-full bg-white/5 border border-white/10 rounded-xl p-4 font-mono text-xs focus:border-brand-500 outline-none text-[var(--text-main)]">
+                        <textarea name="feedback" required placeholder="INTEL_BRIEFING" class="interactable w-full bg-white/5 border border-white/10 rounded-xl p-4 font-mono text-xs focus:border-brand-500 outline-none text-[var(--text-main)] h-24"></textarea>
+                        
+                        <div class="flex gap-6 h-48">
+                            <div class="interactable relative w-16 bg-white/5 rounded-2xl border border-white/10 flex flex-col items-center justify-center overflow-visible touch-none" id="reviewSliderContainer">
+                                <div class="absolute top-4 bottom-4 w-1 bg-white/10 rounded-full"></div>
+                                <div id="sliderHandle" class="absolute w-12 h-10 bg-brand-500 rounded-lg shadow-xl shadow-brand-500/40 flex items-center justify-center text-white font-bold text-xs z-20 cursor-grab active:cursor-grabbing transition-all duration-75" style="top: 0;">
+                                    <span id="handleText">5</span>
+                                </div>
+                                <input type="hidden" name="stars" id="starInput" value="5">
+                            </div>
+
+                            <div class="flex-1 flex flex-col gap-4">
+                                <div class="flex-1 flex items-center justify-center text-brand-500 text-4xl font-black font-mono">
+                                    <span id="starDisplay">5</span><span class="text-sm text-gray-600 ml-2">/ 5</span>
+                                </div>
+                                <label class="interactable aspect-square h-full rounded-2xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center cursor-pointer hover:border-brand-500 overflow-hidden relative">
+                                    <input type="file" name="avatar" class="hidden" onchange="previewFile(this, 'review-preview')">
+                                    <img id="review-preview" class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity">
+                                    <span class="text-[8px] font-mono uppercase text-gray-500 text-center px-2">User Avatar<br>(Opt.)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="interactable w-full py-4 bg-[var(--text-main)] text-[var(--bg-main)] font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-brand-500 hover:text-white transition-all">Log Feedback</button>
+                    </form>
+                    <div class="pt-8 border-t border-white/10">
+                         <p class="text-[10px] font-mono uppercase text-gray-500 mb-4">Quick Deletion</p>
+                         <div id="admin-reviews-list" class="space-y-2"></div>
+                    </div>
+                </div>
+                <div class="w-full flex-shrink-0 h-full overflow-y-auto p-10 space-y-6">
+                    <p class="text-[10px] font-mono uppercase text-brand-500">Global Config</p>
+                    <form onsubmit="handleUpload(event, '/api/settings/pfp', 'pfp')" class="space-y-4">
+                        <label class="block">
+                            <span class="text-[9px] font-mono uppercase text-gray-400 block mb-2">Main Profile Visual</span>
+                            <div class="flex items-center gap-4">
+                                <div class="w-16 h-16 rounded-full overflow-hidden bg-white/10 border border-white/20 flex-shrink-0">
+                                    <img id="current-pfp-preview" src="/assets/pfp.jpg" class="w-full h-full object-cover aspect-square">
+                                </div>
+                                <input type="file" name="pfp" onchange="previewFile(this, 'current-pfp-preview')" class="interactable block w-full text-[10px] text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:bg-white/10 file:text-white hover:file:bg-brand-500 transition-all">
+                            </div>
+                        </label>
+                        <button type="submit" class="interactable w-full py-3 border border-white/10 rounded-xl text-[10px] font-bold uppercase hover:bg-white hover:text-black transition-all">Update Visual</button>
+                    </form>
+                    <hr class="border-white/10">
+                    <button onclick="handleLogout()" class="interactable w-full py-4 bg-red-900/20 text-red-500 border border-red-500/20 font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-red-500 hover:text-white transition-all">Terminate Session</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section id="home" class="relative pt-32 pb-20 px-6 min-h-screen flex flex-col justify-center">
+        <div class="max-w-7xl mx-auto w-full grid lg:grid-cols-12 gap-12 items-center">
+            <div class="lg:col-span-7" data-aos="fade-right">
+                <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
+                    </span>
+                    <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-400">Available for commissions</span>
+                </div>
+                <h1 class="text-6xl md:text-8xl font-black tracking-tighter leading-none mb-8">
+                    CREATING <br>
+                    <span class="rez-gradient">DIGITAL REZ</span>
+                </h1>
+                <p class="text-[var(--text-muted)] text-lg md:text-xl max-w-xl font-light leading-relaxed mb-12">
+                    Visualizing the future through high-fidelity graphics and seamless web experiences. Based in the digital ether.
+                </p>
+                <div class="flex flex-wrap gap-6">
+                    <a href="#work" class="interactable px-10 py-5 bg-brand-600 hover:bg-brand-500 text-white rounded-full font-bold uppercase tracking-widest text-xs transition-all shadow-2xl shadow-brand-500/20 hover:-translate-y-1">Explore Work</a>
+                    <a href="#pricing" class="interactable px-10 py-5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full font-bold uppercase tracking-widest text-xs transition-all">View Rates</a>
+                </div>
+            </div>
+
+            <div class="lg:col-span-5 relative" data-aos="zoom-in" data-aos-delay="200">
+                <div class="relative z-10 animate-float">
+                    <div class="w-full aspect-square rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl">
+                        <img id="main-pfp" src="/assets/pfp.jpg" onerror="this.src='https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80'" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000">
+                    </div>
+                    
+                    <div class="absolute -bottom-6 -right-6 md:-right-12 w-80 glass p-5 rounded-2xl shadow-2xl border border-brand-500/20">
+                        <div class="flex gap-4 mb-3">
+                            <div class="interactable w-16 h-16 rounded-lg overflow-hidden bg-white/5 relative flex-shrink-0 group cursor-pointer" onclick="togglePlay()">
+                                <img id="album-art" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80">
+                                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <i id="play-icon-overlay" class="fa-solid fa-play text-white text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0 flex flex-col justify-center">
+                                <p class="text-[8px] font-mono uppercase text-brand-500 tracking-tighter mb-1">Transmission.fm</p>
+                                <h4 id="song-title" class="text-[var(--text-main)] font-bold text-xs truncate">Axel's Feed</h4>
+                                <p id="artist-name" class="text-gray-500 text-[10px] truncate">Idle</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between px-2">
+                             <button onclick="toggleLoop()" id="miniLoopBtn" class="interactable text-gray-500 hover:text-brand-500 text-[10px] transition-colors"><i class="fa-solid fa-repeat"></i></button>
+                             <div class="flex items-center gap-4">
+                                <button onclick="prevSong()" class="interactable text-gray-400 hover:text-[var(--text-main)] transition-colors"><i class="fa-solid fa-backward-step"></i></button>
+                                <button onclick="togglePlay()" class="interactable w-8 h-8 rounded-full bg-brand-500 text-white flex items-center justify-center hover:scale-105 transition-transform">
+                                    <i id="main-play-icon" class="fa-solid fa-play text-xs"></i>
+                                </button>
+                                <button onclick="nextSong()" class="interactable text-gray-400 hover:text-[var(--text-main)] transition-colors"><i class="fa-solid fa-forward-step"></i></button>
+                             </div>
+                             
+                             <div class="relative group">
+                                <button onclick="toggleVolumeSlider()" class="interactable text-gray-500 hover:text-[var(--text-main)] text-[10px]"><i class="fa-solid fa-volume-high"></i></button>
+                                <div id="volume-popup" class="absolute bottom-full right-0 mb-3 w-8 h-40 bg-dark border border-white/10 rounded-full flex justify-center items-end py-4 shadow-xl opacity-0 pointer-events-none transition-all duration-300 transform translate-y-2 z-50">
+                                    <input type="range" min="0" max="100" value="10" oninput="setVolume(this.value)" class="interactable vertical-slider" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical;">
+                                </div>
+                             </div>
+                        </div>
+                        
+                        <div class="mt-4 w-full h-3 relative group cursor-pointer interactable" onclick="seekAudioFromBar(event)">
+                            <div class="absolute inset-0 bg-white/5 rounded-full overflow-hidden">
+                                <div id="progress-bar" class="h-full bg-brand-500 w-0 transition-all pointer-events-none"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="work" class="py-32 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row items-end justify-between mb-20 gap-8">
+                <div>
+                    <h2 class="text-4xl md:text-6xl font-black tracking-tighter uppercase mb-4">The Vault</h2>
+                    <p class="text-[var(--text-muted)] font-mono text-sm tracking-widest uppercase">Archive // 2024 - 2026</p>
+                </div>
+                <div class="hidden md:block h-[1px] flex-1 mx-12 bg-gradient-to-r from-white/20 to-transparent"></div>
+            </div>
+            
+            <div id="past-work-grid" class="masonry-grid relative"></div>
+        </div>
+    </section>
+
+    <section id="reviews" class="py-32 px-6 relative bg-white/[0.02]">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold mb-16 flex items-center gap-6">
+                Client Intel 
+                <span id="review-count-badge" class="w-8 h-8 flex items-center justify-center bg-brand-500 text-[10px] rounded-full text-white font-mono">00</span>
+            </h2>
+            <div id="reviews-grid" class="masonry-grid relative"></div>
+        </div>
+    </section>
+
+    <section id="pricing" class="py-32 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center max-w-2xl mx-auto mb-20">
+                <h2 class="text-4xl font-bold mb-6">Service Protocols</h2>
+                <p class="text-[var(--text-muted)]">Select an acquisition tier to initiate development.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="glass p-10 rounded-[2.5rem] flex flex-col group hover:border-brand-500/50 transition-all duration-500">
+                    <span class="text-[10px] font-mono text-gray-500 uppercase tracking-[0.3em] mb-4">Tier 01</span>
+                    <h3 class="text-2xl font-bold mb-6">Starter</h3>
+                    <div class="flex items-baseline gap-2 mb-10">
+                        <span class="text-5xl font-black">500</span>
+                        <span class="text-gray-500 font-mono text-sm">RBX</span>
+                    </div>
+                    <ul class="space-y-4 mb-12 flex-1 text-sm text-[var(--text-muted)]">
+                        <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500"></i> 05 High-Res Banners</li>
+                        <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500"></i> Custom Footer</li>
+                    </ul>
+                    <a href="https://discord.gg/druKVJHJZz" target="_blank" class="interactable w-full py-4 rounded-2xl bg-white/5 hover:bg-white hover:text-black text-[var(--text-main)] text-center font-bold uppercase tracking-widest text-[10px] transition-all">Acquire</a>
+                </div>
+
+                <div class="relative p-1 rounded-[2.5rem] bg-gradient-to-b from-brand-500 to-accent group hover:scale-[1.02] transition-all duration-500">
+                    <div class="bg-white h-full w-full rounded-[2.4rem] p-10 flex flex-col relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-6"><i class="fa-solid fa-bolt text-brand-500 animate-pulse"></i></div>
+                        <span class="text-[10px] font-mono text-brand-500 uppercase tracking-[0.3em] mb-4">Tier 03</span>
+                        <h3 class="text-2xl font-bold mb-6 text-black">Elite</h3>
+                        <div class="flex items-baseline gap-2 mb-10">
+                            <span class="text-5xl font-black text-black">3000</span>
+                            <span class="text-gray-900 font-mono text-sm">RBX</span>
+                        </div>
+                        <ul class="space-y-4 mb-12 flex-1 text-sm text-gray-900 font-semibold">
+                            <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500"></i> 25 High-Res Banners</li>
+                            <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500"></i> Priority Rendering</li>
+                        </ul>
+                        <a href="https://discord.gg/druKVJHJZz" target="_blank" class="interactable w-full py-4 rounded-2xl bg-black text-white text-center font-bold uppercase tracking-widest text-[10px] transition-all shadow-xl hover:bg-gray-800">Initialize Tier</a>
+                    </div>
+                </div>
+
+                <div class="glass p-10 rounded-[2.5rem] flex flex-col group hover:border-brand-500/50 transition-all duration-500">
+                    <span class="text-[10px] font-mono text-gray-500 uppercase tracking-[0.3em] mb-2">Tier 02</span>
+                    <h3 class="text-2xl font-bold mb-6">Essential</h3>
+                    <div class="flex items-baseline gap-2 mb-10">
+                        <span class="text-5xl font-black">1000</span>
+                        <span class="text-gray-500 font-mono text-sm">RBX</span>
+                    </div>
+                    <ul class="space-y-4 mb-12 flex-1 text-sm text-[var(--text-muted)]">
+                        <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500"></i> 15 High-Res Banners</li>
+                        <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500"></i> Multi-format Export</li>
+                    </ul>
+                    <a href="https://discord.gg/druKVJHJZz" target="_blank" class="interactable w-full py-4 rounded-2xl bg-white/5 hover:bg-white hover:text-black text-[var(--text-main)] text-center font-bold uppercase tracking-widest text-[10px] transition-all">Acquire</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-20 border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+            <p class="text-gray-600 font-mono text-[10px] uppercase tracking-widest">&copy; 2026 AXEL ARCHIVES // ALL RIGHTS RESERVED</p>
+            <div class="flex gap-8 text-gray-500 text-sm">
+                <a href="https://discord.gg/druKVJHJZz" target="_blank" class="interactable hover:text-white transition-colors"><i class="fa-brands fa-discord"></i></a>
+            </div>
+            <div class="flex items-center gap-2 font-mono text-[10px] text-gray-600">
+                <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                CORE_SYSTEM_ACTIVE
+            </div>
+        </div>
+    </footer>
+
+    <div class="fixed bottom-8 left-8 z-[100] flex items-center gap-4 px-5 py-3 rounded-2xl glass border-white/5 text-[9px] font-bold tracking-widest text-gray-400 uppercase">
+        <i class="fa-solid fa-fingerprint text-brand-500 text-sm"></i>
+        <span>V_COUNT: <span id="viewCount" style="color: var(--view-count-color);">...</span></span>
+    </div>
+
+    <audio id="audio" crossorigin="anonymous" onended="handleSongEnd()"></audio>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // --- DYNAMIC CURSOR ---
+        const cursorDot = document.getElementById('cursor-dot');
+        const cursorTrail = document.getElementById('cursor-trail');
+        window.addEventListener('mousemove', (e) => {
+            const posX = e.clientX;
+            const posY = e.clientY;
+            cursorDot.style.left = `${posX}px`; cursorDot.style.top = `${posY}px`;
+            cursorTrail.animate({ left: `${posX}px`, top: `${posY}px` }, { duration: 500, fill: "forwards" });
+        });
+        document.body.addEventListener('mouseover', (e) => {
+            if (e.target.closest('.interactable') || e.target.tagName === 'BUTTON' || e.target.tagName === 'A') {
+                document.body.classList.add('hovering');
+            }
+        });
+        document.body.addEventListener('mouseout', (e) => {
+            if (e.target.closest('.interactable') || e.target.tagName === 'BUTTON' || e.target.tagName === 'A') {
+                document.body.classList.remove('hovering');
+            }
+        });
+
+        // --- TYPEWRITER EFFECT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const words = [".BOTS", ".SITES", ".DESIGNS", ".SERVICES"];
+            let wordIndex = 0;
+            let isDeleting = false;
+            let txt = '.BOTS'; 
+            const logoSuffix = document.getElementById('logo-suffix');
+
+            if (logoSuffix) {
+                setTimeout(() => { isDeleting = true; typeWriter(); }, 3000); 
+
+                function typeWriter() {
+                    const currentFullWord = words[wordIndex];
+                    if (isDeleting) txt = currentFullWord.substring(0, txt.length - 1);
+                    else txt = currentFullWord.substring(0, txt.length + 1);
+
+                    logoSuffix.innerHTML = txt;
+                    let typeSpeed = isDeleting ? 50 : 150;
+
+                    if (!isDeleting && txt === currentFullWord) {
+                        typeSpeed = 3000;
+                        isDeleting = true;
+                    } else if (isDeleting && txt === '.') { 
+                        isDeleting = false;
+                        wordIndex++;
+                        if (wordIndex >= words.length) wordIndex = 0;
+                        typeSpeed = 500;
+                    }
+                    setTimeout(typeWriter, typeSpeed);
+                }
+            }
+        });
+
+        // --- MATRIX BACKGROUND ---
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, columns, drops = [];
+        const chars = '0123456789ABCDEF@#$%&';
+        function initMatrix() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            columns = Math.floor(width / 14);
+            drops = new Array(columns).fill(1);
+        }
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--brand-600') || '#2563eb'; 
+            ctx.font = '14px monospace';
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * 14, drops[i] * 14);
+                if (drops[i] * 14 > height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 50);
+        window.addEventListener('resize', () => { initMatrix(); });
+        initMatrix();
+
+        // --- APP STATE ---
+        let playlist = [], currentTrackIndex = 0, isPlaying = false, isLooping = false;
+        let allProjects = [], allReviews = [], allMusic = [];
+        let sortables = { projects: null, reviews: null };
+        const audio = document.getElementById('audio');
+        const themes = [null, 'snow', 'toxic']; 
+        let currentThemeIndex = 0;
+
+        const savedThemeStr = localStorage.getItem('axel_theme');
+        if(savedThemeStr) currentThemeIndex = themes.indexOf(savedThemeStr);
+        if(currentThemeIndex === -1) currentThemeIndex = 0;
+
+        // --- THEME SWITCHING ---
+        function cycleTheme() {
+            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+            const theme = themes[currentThemeIndex];
+            const body = document.body;
+            const html = document.documentElement;
+            const favicon = document.getElementById('favicon');
+            const icon = document.getElementById('theme-icon');
+
+            if(theme) {
+                body.setAttribute('data-theme', theme);
+                html.setAttribute('data-theme', theme);
+                localStorage.setItem('axel_theme', theme);
+            } else {
+                body.removeAttribute('data-theme');
+                html.removeAttribute('data-theme');
+                localStorage.removeItem('axel_theme');
+            }
+
+            if (theme === 'snow') {
+                favicon.href = "/faviconwhite.ico?v=3";
+                icon.className = "fa-solid fa-snowflake text-[var(--brand-500)]";
+            } else if (theme === 'toxic') {
+                favicon.href = "/favicon.ico?v=3";
+                icon.className = "fa-solid fa-biohazard text-[var(--brand-500)]";
+            } else {
+                favicon.href = "/favicon.ico?v=3";
+                icon.className = "fa-solid fa-moon text-[var(--brand-500)]";
+            }
+        }
+
+        // --- INITIALIZATION ---
+        window.addEventListener('load', () => {
+            AOS.init({ once: false, mirror: true, duration: 800, offset: 50 });
+            audio.volume = 0.1;
+            initData();
+            initSlider();
+    
+            // Fake Boot Loading
+            let p = 0; 
+            const bar = document.getElementById('bootProgress');
+            const text = document.getElementById('bootText');
+            const btn = document.getElementById('enterBtn');
+            const iv = setInterval(() => { 
+                p += Math.random() * 10; 
+                bar.style.width = Math.min(p, 100) + '%'; 
+                if (p >= 100) {
+                    clearInterval(iv);
+                    text.innerText = "SYSTEM READY";
+                    text.classList.remove('animate-pulse');
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-0', 'translate-y-4');
+                }
+            }, 80);
+        });
+
+        // --- DATA LOADING & AUTH ---
+        async function initData() {
+            try {
+                await loadMusic();
+                await loadProjects();
+                await loadReviews();
+                const auth = await fetch('/api/me').then(r => r.json()).catch(() => ({ isAdmin: false }));
+                renderAuth(auth.isAdmin);
+                const settings = await fetch('/api/settings').then(r => r.json());
+                if(settings.pfp) {
+                    document.getElementById('main-pfp').src = settings.pfp;
+                    document.getElementById('current-pfp-preview').src = settings.pfp;
+                }
+                const views = await fetch('/api/view').then(r => r.json());
+                document.getElementById('viewCount').innerText = views.count.toLocaleString();
+                loadTrack(0, false);
+            } catch(e) { console.warn("System Offline", e); }
+        }
+
+        function renderAuth(isAdmin) {
+            const container = document.getElementById('authContainer');
+            const themeBtn = `
+                <button onclick="cycleTheme()" class="interactable w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
+                    <i id="theme-icon" class="fa-solid fa-moon text-[var(--brand-500)]"></i>
+                </button>
+            `;
+            if(isAdmin) {
+                container.innerHTML = `
+                    ${themeBtn}
+                    <button onclick="toggleEditLayout()" id="editLayoutBtn" class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-[9px] font-bold text-[var(--text-muted)] tracking-widest uppercase interactable transition-all">Edit Layout</button>
+                    <button onclick="toggleAdmin()" class="px-5 py-2 glass rounded-full text-[10px] font-black text-brand-500 tracking-widest border-brand-500/20 hover:bg-brand-500 hover:text-white transition-all interactable">ROOT</button>
+                `;
+                renderAdminLists();
+                // Set theme icon on load
+                const icon = document.getElementById('theme-icon');
+                if(icon) {
+                     const theme = themes[currentThemeIndex];
+                     if (theme === 'snow') icon.className = "fa-solid fa-snowflake text-[var(--brand-500)]";
+                     else if (theme === 'toxic') icon.className = "fa-solid fa-biohazard text-[var(--brand-500)]";
+                     else icon.className = "fa-solid fa-moon text-[var(--brand-500)]";
+                }
+            } else {
+                container.innerHTML = `${themeBtn}<a href="/auth/discord" class="text-gray-500 hover:text-white transition-colors interactable"><i class="fa-solid fa-lock"></i></a>`;
+            }
+        }
+
+        // --- NEW DRAG PHYSICS & EDIT MODE ---
+        let isEditMode = false;
+        let physicsInterval;
+        let lastMouseX = 0;
+        let dragVelocityX = 0;
+        let currentDragEl = null;
+
+        // Track mouse velocity for the "tilt" effect
+        document.addEventListener('mousemove', (e) => {
+            if(!isEditMode) return;
+            const deltaX = e.clientX - lastMouseX;
+            lastMouseX = e.clientX;
+            dragVelocityX = deltaX; // Store velocity
+        });
+
+        function handleDragPhysics() {
+            if(!currentDragEl) return;
+            
+            // Calculate tilt based on velocity (max 12 deg)
+            const maxTilt = 12;
+            const tilt = Math.max(Math.min(dragVelocityX * 0.8, maxTilt), -maxTilt);
+            
+            // Apply physics to the dragged clone
+            // NOTE: We use !important in CSS to force position:fixed, 
+            // but we need to let Sortable handle top/left, so we only touch transform here.
+            currentDragEl.style.transform += ` rotate(${tilt}deg) scale(1.05)`;
+            
+            // Friction/Decay
+            dragVelocityX *= 0.85;
+            if (Math.abs(dragVelocityX) < 0.1) dragVelocityX = 0;
+        }
+
+        async function toggleEditLayout() {
+            isEditMode = !isEditMode;
+            
+            const btn = document.getElementById('editLayoutBtn');
+            const body = document.body;
+            const projectGrid = document.getElementById('past-work-grid');
+            const reviewGrid = document.getElementById('reviews-grid');
+
+            if(isEditMode) {
+                // --- ENTER EDIT MODE ---
+                btn.classList.add('bg-brand-500', 'text-white');
+                btn.innerText = "DONE";
+                body.classList.add('edit-mode');
+                
+                // FLUID PHYSICS CONFIG
+                const sortConfig = {
+                    animation: 400, // Longer animation for fluidity
+                    easing: "cubic-bezier(0.2, 0, 0, 1)", // "Ease out expo" feel
+                    ghostClass: 'sortable-ghost',
+                    dragClass: 'sortable-drag',
+                    
+                    // CRITICAL: Force Fallback makes the clone follow the mouse perfectly
+                    // instead of using the browser's native drag ghost.
+                    forceFallback: true, 
+                    fallbackOnBody: true, 
+                    fallbackTolerance: 3, 
+                    
+                    swapThreshold: 0.65, // Needs to overlap more to trigger swap
+                    
+                    onStart: function(evt) {
+                        document.body.classList.add('is-dragging');
+                        // Start the physics loop for the tilt effect
+                        setTimeout(() => {
+                            const dragEl = document.querySelector('.sortable-drag');
+                            if(dragEl) {
+                                currentDragEl = dragEl;
+                                physicsInterval = setInterval(handleDragPhysics, 16);
+                            }
+                        }, 10);
+                    },
+                    onEnd: function(evt) {
+                        document.body.classList.remove('is-dragging');
+                        currentDragEl = null;
+                        clearInterval(physicsInterval);
+                    }
+                };
+
+                if(projectGrid) {
+                    if(sortables['projects']) sortables['projects'].destroy();
+                    sortables['projects'] = new Sortable(projectGrid, sortConfig);
+                }
+
+                if(reviewGrid) {
+                    if(sortables['reviews']) sortables['reviews'].destroy();
+                    sortables['reviews'] = new Sortable(reviewGrid, sortConfig);
+                }
+
+            } else {
+                // --- SAVE & EXIT ---
+                btn.innerText = "SAVING...";
+                
+                clearInterval(physicsInterval);
+                await Promise.all([saveOrder('projects'), saveOrder('reviews')]);
+
+                btn.classList.remove('bg-brand-500', 'text-white');
+                btn.innerText = "EDIT LAYOUT";
+                body.classList.remove('edit-mode');
+                
+                if(sortables['projects']) { sortables['projects'].destroy(); sortables['projects'] = null; }
+                if(sortables['reviews']) { sortables['reviews'].destroy(); sortables['reviews'] = null; }
+
+                // Refresh AOS animations only after we exit edit mode
+                setTimeout(() => AOS.refresh(), 100);
+            }
+        }
+
+        async function saveOrder(type) {
+            const listId = type === 'projects' ? 'past-work-grid' : 'reviews-grid';
+            const container = document.getElementById(listId);
+            if(!container) return;
+
+            const ids = Array.from(container.children)
+                .map(el => el.getAttribute('data-id'))
+                .filter(id => id);
+            
+            try {
+                await fetch(`/api/${type}/reorder`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(ids)
+                });
+            } catch(e) { console.error("Save order failed", e); }
+        }
+
+        // --- CONTENT LOADERS ---
+        async function loadProjects() {
+            allProjects = await fetch('/api/projects').then(r => r.json()).catch(() => []);
+            if(!allProjects.length) allProjects = [{id: '1', title: 'Neo-Tokyo', image: 'https://images.unsplash.com/photo-1558655146-d09347e0b7a8?q=80'}];
+            
+            document.getElementById('past-work-grid').innerHTML = allProjects.map((p, i) => `
+                <div class="masonry-item group relative overflow-hidden rounded-[2rem] bg-white/5 border border-white/5 interactable" 
+                     data-id="${p.id}" onclick="openModal('${p.image}')" 
+                     data-aos="fade-up" data-aos-delay="${i*50}">
+                    <img src="${p.image}" class="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110 group-hover:rotate-1 pointer-events-none">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8 pointer-events-none">
+                        <p class="text-[10px] font-mono text-brand-500 uppercase tracking-[0.3em] mb-2">Project_${p.id}</p>
+                        <h3 class="text-xl font-bold text-white">${p.title}</h3>
+                    </div>
+                </div>
+            `).join('');
+            renderAdminLists();
+            setTimeout(() => AOS.refresh(), 100);
+        }
+
+        async function loadReviews() {
+            allReviews = await fetch('/api/reviews').then(r => r.json()).catch(() => []);
+            const display = allReviews.length ? allReviews : [{id:'0', name: 'VOID', feedback: 'System initialization complete. Excellent rendering capabilities.', stars: 5, date: '01.01.26', avatar: 'https://cdn.discordapp.com/embed/avatars/0.png'}];
+            document.getElementById('review-count-badge').innerText = display.length.toString().padStart(2, '0');
+            
+            document.getElementById('reviews-grid').innerHTML = display.map((r, i) => `
+                <div class="masonry-item glass p-8 rounded-[2rem] border border-white/5 flex flex-col h-full relative" data-id="${r.id}" data-aos="fade-up" data-aos-delay="${i*50}">
+                    <div class="absolute top-8 left-8 text-[9px] font-mono text-gray-500 opacity-50">${r.date || 'RECENT'}</div>
+                    <div class="flex items-center gap-4 mb-6 mt-6 pointer-events-none">
+                        <img src="${r.avatar}" class="w-10 h-10 rounded-full object-cover bg-white/5">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-mono font-bold text-[var(--text-main)] tracking-widest uppercase mb-1">${r.name}</span>
+                            <div class="text-brand-500 text-[9px] gap-1 flex">${'<i class="fa-solid fa-star"></i>'.repeat(r.stars)}</div>
+                        </div>
+                    </div>
+                    <p class="text-[var(--text-main)] font-medium leading-relaxed flex-1 text-sm pointer-events-none">"${r.feedback}"</p>
+                </div>
+            `).join('');
+            renderAdminLists();
+            setTimeout(() => AOS.refresh(), 100);
+        }
+
+        async function loadMusic() {
+            allMusic = await fetch('/api/music').then(r => r.json()).catch(()=>[]);
+            playlist = allMusic.length ? allMusic : [{ title: "CYBERPUNK", artist: "Hyper", cover: "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80", file: "" }];
+        }
+
+        // --- ADMIN FUNCTIONS ---
+        function toggleAdmin() {
+            document.getElementById('adminDrawer').classList.toggle('translate-x-full');
+            const overlay = document.getElementById('adminOverlay');
+            overlay.classList.toggle('opacity-0'); overlay.classList.toggle('pointer-events-auto');
+        }
+
+        function switchTab(idx) {
+            document.getElementById('slider-track').style.transform = `translateX(-${idx * 100}%)`;
+            document.querySelectorAll('.admin-tab-btn').forEach((btn, i) => {
+                btn.classList.remove('bg-brand-500', 'text-white');
+                btn.classList.add('text-gray-500');
+                if(i === idx) {
+                    btn.classList.remove('text-gray-500');
+                    btn.classList.add('bg-brand-500', 'text-white');
+                }
+            });
+        }
+
+        function renderAdminLists() {
+            const createList = (data, type, contentFn) => {
+                const el = document.getElementById(`admin-${type}-list`);
+                if(el) {
+                    el.innerHTML = data.map(item => `
+                        <div class="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
+                            ${contentFn(item)}
+                            <button onclick="deleteItem('${type}', '${item.id}')" class="interactable text-red-500 hover:text-red-400 px-2 ml-auto"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `).join('');
+                }
+            };
+            createList(allProjects, 'projects', p => `<img src="${p.image}" class="w-8 h-8 rounded object-cover"><span class="text-[10px] font-mono flex-1 truncate text-gray-300">${p.title}</span>`);
+            createList(allMusic, 'music', m => `<img src="${m.cover}" class="w-8 h-8 rounded object-cover"><div class="flex-1 truncate"><p class="text-[10px] font-mono text-gray-300">${m.title}</p></div>`);
+            createList(allReviews, 'reviews', r => `<span class="text-[10px] font-mono flex-1 truncate text-gray-300">${r.name}</span>`);
+        }
+
+        async function deleteItem(type, id) {
+            showConfirm('PERMANENTLY DELETE THIS DATA RECORD?', async () => {
+                await fetch(`/api/${type}/${id}`, { method: 'DELETE' });
+                if(type === 'projects') await loadProjects();
+                else if(type === 'music') await loadMusic();
+                else if(type === 'reviews') await loadReviews();
+            });
+        }
+
+        function showConfirm(message, onConfirm) {
+            const modal = document.getElementById('confirmModal');
+            const msgEl = document.getElementById('confirmMessage');
+            const yesBtn = document.getElementById('confirmYes');
+            const noBtn = document.getElementById('confirmCancel');
+            
+            msgEl.innerText = message;
+            modal.classList.remove('hidden');
+            
+            const newYes = yesBtn.cloneNode(true);
+            const newNo = noBtn.cloneNode(true);
+            yesBtn.parentNode.replaceChild(newYes, yesBtn);
+            noBtn.parentNode.replaceChild(newNo, noBtn);
+            
+            newYes.addEventListener('click', () => { modal.classList.add('hidden'); onConfirm(); });
+            newNo.addEventListener('click', () => { modal.classList.add('hidden'); });
+        }
+
+        async function handleUpload(event, endpoint, type) {
+            event.preventDefault();
+            const form = event.target;
+            const btn = form.querySelector('button[type="submit"]');
+            const originalText = btn.innerText;
+            btn.innerText = "TRANSMITTING..."; btn.disabled = true; btn.classList.add('opacity-50');
+
+            try {
+                const res = await fetch(endpoint, { method: 'POST', body: new FormData(form) });
+                if (res.ok) {
+                    btn.innerText = "SUCCESS"; btn.classList.replace('bg-[var(--text-main)]','bg-green-500');
+                    if(type === 'projects') await loadProjects();
+                    else if(type === 'music') await loadMusic();
+                    else if(type === 'reviews') await loadReviews();
+                    else if(type === 'pfp') { location.reload(); return; }
+
+                    form.reset();
+                    form.querySelectorAll('img').forEach(img => img.style.opacity = 0);
+                    setTimeout(() => { 
+                         btn.innerText = originalText; 
+                         btn.classList.replace('bg-green-500','bg-[var(--text-main)]'); 
+                         btn.classList.remove('opacity-50'); 
+                         btn.disabled = false;
+                    }, 1500);
+                } else throw new Error(await res.text());
+            } catch (e) {
+                console.error(e);
+                btn.innerText = "FAILED"; btn.classList.replace('bg-[var(--text-main)]','bg-red-500');
+                setTimeout(() => { btn.innerText = originalText; btn.classList.replace('bg-red-500','bg-[var(--text-main)]'); btn.classList.remove('opacity-50'); btn.disabled = false; }, 2000);
+            }
+        }
+
+        async function handleLogout() {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            location.reload();
+        }
+
+        function previewFile(input, imgId) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => { document.getElementById(imgId).src = e.target.result; document.getElementById(imgId).style.opacity = 1; }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // --- AUDIO ENGINE ---
+        function loadTrack(index, play = true) {
+            if (index < 0) index = playlist.length - 1;
+            if (index >= playlist.length) index = 0;
+            currentTrackIndex = index;
+            const track = playlist[index];
+            document.getElementById('song-title').innerText = track.title;
+            document.getElementById('artist-name').innerText = track.artist;
+            document.getElementById('album-art').src = track.cover;
+            audio.src = track.file; 
+            audio.load();
+            if (play) {
+                audio.play().catch(e => console.log("Autoplay blocked", e));
+                isPlaying = true;
+                updatePlayIcons();
+            }
+        }
+
+        function togglePlay() {
+            if(isPlaying) audio.pause(); else audio.play();
+            isPlaying = !isPlaying;
+            updatePlayIcons();
+        }
+
+        function updatePlayIcons() {
+            const mainIcon = document.getElementById('main-play-icon');
+            const overlayIcon = document.getElementById('play-icon-overlay');
+            if(isPlaying) {
+                mainIcon.className = 'fa-solid fa-pause text-xs';
+                overlayIcon.className = 'fa-solid fa-pause text-white text-xl';
+            } else {
+                mainIcon.className = 'fa-solid fa-play text-xs';
+                overlayIcon.className = 'fa-solid fa-play text-white text-xl';
+            }
+        }
+
+        function toggleVolumeSlider() {
+            const popup = document.getElementById('volume-popup');
+            popup.classList.toggle('opacity-0');
+            popup.classList.toggle('pointer-events-none');
+            popup.classList.toggle('translate-y-2');
+        }
+
+        function setVolume(val) { audio.volume = val / 100; }
+        function seekAudioFromBar(e) { 
+            const rect = e.currentTarget.getBoundingClientRect();
+            audio.currentTime = (e.clientX - rect.left) / rect.width * audio.duration;
+        }
+        function prevSong() { loadTrack(currentTrackIndex - 1); }
+        function nextSong() { loadTrack(currentTrackIndex + 1); }
+        function toggleLoop() {
+            isLooping = !isLooping;
+            audio.loop = isLooping;
+            const btn = document.getElementById('miniLoopBtn');
+            btn.classList.toggle('text-brand-500');
+            btn.classList.toggle('text-gray-500');
+        }
+        function handleSongEnd() { if(!isLooping) nextSong(); }
+        audio.addEventListener('timeupdate', () => {
+            document.getElementById('progress-bar').style.width = (audio.currentTime / audio.duration) * 100 + '%';
+        });
+        function enterSite() { 
+            document.getElementById('enterScreen').classList.add('opacity-0', 'pointer-events-none'); 
+            if(playlist.length > 0) audio.play().then(() => { isPlaying = true; updatePlayIcons(); }).catch(e => console.log("Audio still blocked", e));
+        }
+
+        // --- REVIEW SLIDER LOGIC ---
+        function initSlider() {
+            const container = document.getElementById('reviewSliderContainer');
+            const handle = document.getElementById('sliderHandle');
+            const input = document.getElementById('starInput');
+            const display = document.getElementById('starDisplay');
+            const handleText = document.getElementById('handleText');
+            let isDragging = false;
+            const handleHeight = 40; 
+
+            const update = (clientY) => {
+                const rect = container.getBoundingClientRect();
+                let relativeY = clientY - rect.top;
+                const percentage = Math.max(0, Math.min(1, relativeY / rect.height));
+                const value = Math.round(5 - (percentage * 4));
+                const snapPercentage = (5 - value) / 4; 
+                const topPos = snapPercentage * (rect.height - handleHeight);
+                handle.style.top = `${topPos}px`;
+                handleText.innerText = value;
+                return value;
+            };
+
+            const snap = (value) => {
+                input.value = value;
+                display.innerText = value;
+                handleText.innerText = value;
+                const rect = container.getBoundingClientRect();
+                const topPos = ((5 - value) / 4) * (rect.height - handleHeight);
+                handle.style.top = `${topPos}px`;
+            }
+
+            container.addEventListener('pointerdown', (e) => { isDragging = true; container.setPointerCapture(e.pointerId); snap(update(e.clientY)); });
+            container.addEventListener('pointermove', (e) => { if(isDragging) { e.preventDefault(); update(e.clientY); } });
+            container.addEventListener('pointerup', (e) => { isDragging = false; snap(update(e.clientY)); container.releasePointerCapture(e.pointerId); });
+            snap(5);
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.style.height = menu.style.height === '0px' || menu.style.height === '' ? '240px' : '0px';
+        }
+    </script>
+</body>
+</html>
