@@ -43,7 +43,13 @@ mongoose.connect(process.env.MONGO_URI)
 const Project = mongoose.model('Project', new mongoose.Schema({ 
     title: String, 
     image: String, 
-    order: { type: Number, default: 0 } 
+    order: { type: Number, default: 0 },
+    layout: { 
+        x: Number, 
+        y: Number, 
+        w: { type: Number, default: 4 }, 
+        h: { type: Number, default: 4 } 
+    }
 }));
 
 const Review = mongoose.model('Review', new mongoose.Schema({ 
@@ -52,7 +58,13 @@ const Review = mongoose.model('Review', new mongoose.Schema({
     stars: Number, 
     date: { type: String, default: () => new Date().toLocaleDateString() }, 
     avatar: String, 
-    order: { type: Number, default: 0 } 
+    order: { type: Number, default: 0 },
+    layout: { 
+        x: Number, 
+        y: Number, 
+        w: { type: Number, default: 4 }, 
+        h: { type: Number, default: 3 } 
+    }
 }));
 
 const Music = mongoose.model('Music', new mongoose.Schema({ 
@@ -166,6 +178,19 @@ app.get('/auth/discord/callback', async (req, res) => {
     }
 });
 
+// --- DEV KEY AUTHENTICATION ---
+app.post('/api/auth/devkey', (req, res) => {
+    const { key } = req.body;
+    
+    // Check if the provided key matches the DEV_KEY in your .env
+    if (key && key === process.env.DEV_KEY) {
+        req.session.user = { id: 'dev_user', isAdmin: true };
+        return res.json({ success: true });
+    }
+    
+    res.status(401).json({ error: 'Invalid Developer Key' });
+});
+
 app.get('/api/me', (req, res) => res.json(req.session.user || { isAdmin: false }));
 app.post('/api/auth/logout', (req, res) => { req.session = null; res.json({ success: true }); });
 
@@ -189,7 +214,8 @@ app.post('/api/settings/pfp', requireAdmin, upload.single('pfp'), async (req, re
 // 2. PROJECTS
 app.get('/api/projects', async (req, res) => {
     const projects = await Project.find().sort({ order: 1 });
-    res.json(projects.map(p => ({ id: p._id, title: p.title, image: p.image })));
+    // Make sure we pass the layout object to the frontend
+    res.json(projects.map(p => ({ id: p._id, title: p.title, image: p.image, layout: p.layout })));
 });
 
 app.post('/api/projects', requireAdmin, upload.single('image'), async (req, res) => {
@@ -207,7 +233,16 @@ app.delete('/api/projects/:id', requireAdmin, async (req, res) => {
 });
 
 app.put('/api/projects/reorder', requireAdmin, async (req, res) => {
-    const ops = req.body.map((id, index) => ({ updateOne: { filter: { _id: id }, update: { order: index } } }));
+    // Update both the order index AND the specific layout data from GridStack
+    const ops = req.body.map((item, index) => ({ 
+        updateOne: { 
+            filter: { _id: item.id }, 
+            update: { 
+                order: index, 
+                layout: { x: item.x, y: item.y, w: item.w, h: item.h } 
+            } 
+        } 
+    }));
     await Project.bulkWrite(ops);
     res.json({ success: true });
 });
@@ -215,7 +250,15 @@ app.put('/api/projects/reorder', requireAdmin, async (req, res) => {
 // 3. REVIEWS
 app.get('/api/reviews', async (req, res) => {
     const reviews = await Review.find().sort({ order: 1 });
-    res.json(reviews.map(r => ({ ...r._doc, id: r._id })));
+    res.json(reviews.map(r => ({ 
+        id: r._id, 
+        name: r.name, 
+        feedback: r.feedback, 
+        stars: r.stars, 
+        date: r.date,
+        avatar: r.avatar,
+        layout: r.layout // Explicitly sending the layout object to the frontend
+    })));
 });
 
 app.post('/api/reviews', requireAdmin, upload.single('avatar'), async (req, res) => {
@@ -234,7 +277,20 @@ app.delete('/api/reviews/:id', requireAdmin, async (req, res) => {
 });
 
 app.put('/api/reviews/reorder', requireAdmin, async (req, res) => {
-    const ops = req.body.map((id, index) => ({ updateOne: { filter: { _id: id }, update: { order: index } } }));
+    const ops = req.body.map((item, index) => ({ 
+        updateOne: { 
+            filter: { _id: item.id }, 
+            update: { 
+                $set: {
+                    order: index, 
+                    'layout.x': item.x, 
+                    'layout.y': item.y, 
+                    'layout.w': item.w || 4, // Fallback to schema default if frontend misses it
+                    'layout.h': item.h || 3  // Fallback to schema default
+                }
+            } 
+        } 
+    }));
     await Review.bulkWrite(ops);
     res.json({ success: true });
 });
@@ -280,7 +336,9 @@ app.delete('/api/music/:id', requireAdmin, async (req, res) => {
 });
 
 app.put('/api/music/reorder', requireAdmin, async (req, res) => {
-    const ops = req.body.map((id, index) => ({ updateOne: { filter: { _id: id }, update: { order: index } } }));
+    const ops = req.body.map((item, index) => ({ 
+        updateOne: { filter: { _id: item.id }, update: { order: index } } 
+    }));
     await Music.bulkWrite(ops);
     res.json({ success: true });
 });
@@ -317,7 +375,9 @@ app.delete('/api/pricing/:id', requireAdmin, async (req, res) => {
 });
 
 app.put('/api/pricing/reorder', requireAdmin, async (req, res) => {
-    const ops = req.body.map((id, index) => ({ updateOne: { filter: { _id: id }, update: { order: index } } }));
+    const ops = req.body.map((item, index) => ({ 
+        updateOne: { filter: { _id: item.id }, update: { order: index } } 
+    }));
     await Pricing.bulkWrite(ops);
     res.json({ success: true });
 });
