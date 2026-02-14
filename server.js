@@ -63,6 +63,23 @@ const Music = mongoose.model('Music', new mongoose.Schema({
     order: { type: Number, default: 0 } 
 }));
 
+// NEW: Pricing Schema
+const Pricing = mongoose.model('Pricing', new mongoose.Schema({
+    tier: String,
+    title: String,
+    price: Number,
+    currency: String,
+    perks: String,
+    isElite: { type: Boolean, default: false },
+    link: String,
+    order: { type: Number, default: 0 }
+}));
+
+const Setting = mongoose.model('Setting', new mongoose.Schema({ 
+    key: String, 
+    value: String 
+}));
+
 const ViewCounter = mongoose.model('ViewCounter', new mongoose.Schema({ 
     count: { type: Number, default: 1400 } 
 }));
@@ -70,18 +87,17 @@ const ViewCounter = mongoose.model('ViewCounter', new mongoose.Schema({
 // --- MIDDLEWARE ---
 const app = express();
 
-// Ensure temp folder exists for uploads before they go to cloud
 if (!fs.existsSync('./temp')) fs.mkdirSync('./temp');
 
 app.use(cors());
-app.use(express.static('public')); // Serves index.html
-app.use('/assets', express.static('assets')); // Serves static assets like favicon
+app.use(express.static('public')); 
+app.use('/assets', express.static('assets')); 
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 app.use(session({
     name: 'session',
     keys: [process.env.SESSION_KEY || 'secretKey1', process.env.SESSION_KEY2 || 'secretKey2'],
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: 24 * 60 * 60 * 1000 
 }));
 
 // --- MULTER (Temporary Storage) ---
@@ -92,7 +108,7 @@ const storage = multer.diskStorage({
         cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + ext);
     }
 });
-const upload = multer({ storage, limits: { fileSize: 100 * 1024 * 1024 } }); // 100MB Limit per file
+const upload = multer({ storage, limits: { fileSize: 100 * 1024 * 1024 } });
 
 // --- HELPER: Cloudinary Upload & Cleanup ---
 async function uploadToCloudinary(localPath, folder, resourceType = 'auto') {
@@ -103,12 +119,10 @@ async function uploadToCloudinary(localPath, folder, resourceType = 'auto') {
             use_filename: true,
             unique_filename: false
         });
-        // Delete local temp file after successful upload
         if (fs.existsSync(localPath)) fs.unlinkSync(localPath);
         return result.secure_url;
     } catch (error) {
         console.error("Cloudinary Upload Failed:", error);
-        // Try to delete temp file even if upload failed
         if (fs.existsSync(localPath)) fs.unlinkSync(localPath);
         throw error;
     }
@@ -152,68 +166,36 @@ app.get('/auth/discord/callback', async (req, res) => {
     }
 });
 
-app.post('/api/auth/devkey', express.json(), (req, res) => {
-    const { key } = req.body;
-    if (key && key === process.env.DEV_KEY) {
-        req.session.user = { id: 'dev_admin', isAdmin: true };
-        return res.json({ success: true });
-    }
-    res.status(401).json({ error: 'Invalid Dev Key' });
-});
-
-app.get('/api/me', (req, res) => res.json(req.session.user || { isAdmin: false }));
-app.post('/api/auth/logout', (req, res) => { req.session = null; res.json({ success: true }); });
-
 app.get('/api/me', (req, res) => res.json(req.session.user || { isAdmin: false }));
 app.post('/api/auth/logout', (req, res) => { req.session = null; res.json({ success: true }); });
 
 // --- API ROUTES ---
 
-// 1. SETTINGS (Global PFP)
-app.get('/api/settings', (req, res) => {
-    // Generate the static Cloudinary URL using your environment variable
-    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-    // Append a timestamp so the browser doesn't load a cached older version
-    const timestamp = new Date().getTime(); 
-    res.json({ pfp: `https://res.cloudinary.com/${cloudName}/image/upload/v1/axel_portfolio/main_pfp.jpg?t=${timestamp}` });
+// 1. SETTINGS
+app.get('/api/settings', async (req, res) => {
+    const pfp = await Setting.findOne({ key: 'pfp' });
+    res.json({ pfp: pfp ? pfp.value : '/assets/pfp.jpg' });
 });
 
 app.post('/api/settings/pfp', requireAdmin, upload.single('pfp'), async (req, res) => {
     if(!req.file) return res.status(400).send('No file');
     try {
-        // Upload to Cloudinary with a fixed public_id and force overwrite
-        const result = await cloudinary.uploader.upload(req.file.path, {
-            public_id: 'axel_portfolio/main_pfp',
-            overwrite: true,
-            invalidate: true, // Tells Cloudinary to clear its CDN cache
-            resource_type: 'image'
-        });
-        
-        // Clean up the local temp file
-        if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-        
-        res.json({ pfp: result.secure_url });
-    } catch(e) { 
-        if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-        res.status(500).send(e.toString()); 
-    }
+        const url = await uploadToCloudinary(req.file.path, 'settings', 'image');
+        await Setting.findOneAndUpdate({ key: 'pfp' }, { value: url }, { upsert: true });
+        res.json({ pfp: url });
+    } catch(e) { res.status(500).send(e.toString()); }
 });
 
 // 2. PROJECTS
 app.get('/api/projects', async (req, res) => {
     const projects = await Project.find().sort({ order: 1 });
-    // Map _id to id for frontend compatibility
     res.json(projects.map(p => ({ id: p._id, title: p.title, image: p.image })));
 });
 
 app.post('/api/projects', requireAdmin, upload.single('image'), async (req, res) => {
     try {
         const url = await uploadToCloudinary(req.file.path, 'projects', 'image');
-        const newProject = new Project({ 
-            title: req.body.title, 
-            image: url, 
-            order: -Date.now() 
-        });
+        const newProject = new Project({ title: req.body.title, image: url, order: -Date.now() });
         await newProject.save();
         res.json({ ...newProject._doc, id: newProject._id });
     } catch(e) { res.status(500).send(e.toString()); }
@@ -225,9 +207,7 @@ app.delete('/api/projects/:id', requireAdmin, async (req, res) => {
 });
 
 app.put('/api/projects/reorder', requireAdmin, async (req, res) => {
-    const ops = req.body.map((id, index) => ({
-        updateOne: { filter: { _id: id }, update: { order: index } }
-    }));
+    const ops = req.body.map((id, index) => ({ updateOne: { filter: { _id: id }, update: { order: index } } }));
     await Project.bulkWrite(ops);
     res.json({ success: true });
 });
@@ -241,16 +221,8 @@ app.get('/api/reviews', async (req, res) => {
 app.post('/api/reviews', requireAdmin, upload.single('avatar'), async (req, res) => {
     try {
         let avatarUrl = 'https://cdn.discordapp.com/embed/avatars/0.png';
-        if (req.file) {
-            avatarUrl = await uploadToCloudinary(req.file.path, 'avatars', 'image');
-        }
-        const newReview = new Review({
-            name: req.body.name,
-            feedback: req.body.feedback,
-            stars: parseInt(req.body.stars) || 5,
-            avatar: avatarUrl,
-            order: -Date.now()
-        });
+        if (req.file) avatarUrl = await uploadToCloudinary(req.file.path, 'avatars', 'image');
+        const newReview = new Review({ name: req.body.name, feedback: req.body.feedback, stars: parseInt(req.body.stars) || 5, avatar: avatarUrl, order: -Date.now() });
         await newReview.save();
         res.json({ ...newReview._doc, id: newReview._id });
     } catch(e) { res.status(500).send(e.toString()); }
@@ -262,14 +234,12 @@ app.delete('/api/reviews/:id', requireAdmin, async (req, res) => {
 });
 
 app.put('/api/reviews/reorder', requireAdmin, async (req, res) => {
-    const ops = req.body.map((id, index) => ({
-        updateOne: { filter: { _id: id }, update: { order: index } }
-    }));
+    const ops = req.body.map((id, index) => ({ updateOne: { filter: { _id: id }, update: { order: index } } }));
     await Review.bulkWrite(ops);
     res.json({ success: true });
 });
 
-// 4. MUSIC (With FFmpeg Video-to-Audio)
+// 4. MUSIC
 app.get('/api/music', async (req, res) => {
     const music = await Music.find().sort({ order: 1 });
     res.json(music.map(m => ({ ...m._doc, id: m._id })));
@@ -279,48 +249,25 @@ app.post('/api/music', requireAdmin, upload.fields([{ name: 'audio', maxCount: 1
     try {
         if (!req.files || !req.files['audio']) return res.status(400).send('Audio/Video file required');
         
-        // Handle Cover Art
         let coverUrl = 'https://placehold.co/400x400/101010/FFF';
-        if (req.files['cover']) {
-            coverUrl = await uploadToCloudinary(req.files['cover'][0].path, 'covers', 'image');
-        }
+        if (req.files['cover']) coverUrl = await uploadToCloudinary(req.files['cover'][0].path, 'covers', 'image');
 
-        // Handle Audio/Video
         const file = req.files['audio'][0];
         let filePathToUpload = file.path;
-        let resourceType = 'video'; // Cloudinary treats audio as video type
-
-        // Convert Video to MP3 if necessary
+        
         if (file.mimetype.startsWith('video/')) {
             const newFilename = file.filename.replace(path.extname(file.filename), '.mp3');
             const newPath = path.join('temp', newFilename);
-            
             await new Promise((resolve, reject) => {
-                ffmpeg(file.path).toFormat('mp3')
-                    .on('error', reject)
-                    .on('end', () => {
-                        fs.unlinkSync(file.path); // Delete original large video file
-                        resolve();
-                    })
-                    .save(newPath);
+                ffmpeg(file.path).toFormat('mp3').on('error', reject).on('end', () => { fs.unlinkSync(file.path); resolve(); }).save(newPath);
             });
-            
             filePathToUpload = newPath;
         }
 
-        // Upload to Cloudinary
-        const audioUrl = await uploadToCloudinary(filePathToUpload, 'music', resourceType);
-
-        const newMusic = new Music({
-            title: req.body.title,
-            artist: req.body.artist,
-            file: audioUrl,
-            cover: coverUrl,
-            order: -Date.now()
-        });
+        const audioUrl = await uploadToCloudinary(filePathToUpload, 'music', 'video');
+        const newMusic = new Music({ title: req.body.title, artist: req.body.artist, file: audioUrl, cover: coverUrl, order: -Date.now() });
         await newMusic.save();
         res.json({ ...newMusic._doc, id: newMusic._id });
-
     } catch (e) { 
         console.error("Music Upload Error:", e);
         res.status(500).send(e.toString()); 
@@ -333,14 +280,49 @@ app.delete('/api/music/:id', requireAdmin, async (req, res) => {
 });
 
 app.put('/api/music/reorder', requireAdmin, async (req, res) => {
-    const ops = req.body.map((id, index) => ({
-        updateOne: { filter: { _id: id }, update: { order: index } }
-    }));
+    const ops = req.body.map((id, index) => ({ updateOne: { filter: { _id: id }, update: { order: index } } }));
     await Music.bulkWrite(ops);
     res.json({ success: true });
 });
 
-// 5. VIEW COUNTER
+// 5. PRICING (NEW)
+app.get('/api/pricing', async (req, res) => {
+    const pricing = await Pricing.find().sort({ order: 1 });
+    res.json(pricing.map(p => ({ ...p._doc, id: p._id })));
+});
+
+app.post('/api/pricing', requireAdmin, async (req, res) => {
+    try {
+        const newTier = new Pricing({
+            tier: req.body.tier,
+            title: req.body.title,
+            price: Number(req.body.price),
+            currency: req.body.currency,
+            perks: req.body.perks,
+            isElite: req.body.isElite === true || req.body.isElite === 'true',
+            link: req.body.link,
+            order: -Date.now()
+        });
+        await newTier.save();
+        res.json({ ...newTier._doc, id: newTier._id });
+    } catch(e) { 
+        console.error("Pricing Upload Error:", e);
+        res.status(500).send(e.toString()); 
+    }
+});
+
+app.delete('/api/pricing/:id', requireAdmin, async (req, res) => {
+    await Pricing.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+});
+
+app.put('/api/pricing/reorder', requireAdmin, async (req, res) => {
+    const ops = req.body.map((id, index) => ({ updateOne: { filter: { _id: id }, update: { order: index } } }));
+    await Pricing.bulkWrite(ops);
+    res.json({ success: true });
+});
+
+// 6. VIEW COUNTER
 app.get('/api/view', async (req, res) => {
     let counter = await ViewCounter.findOne();
     if (!counter) counter = new ViewCounter();
