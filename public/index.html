@@ -116,18 +116,16 @@
         /* --- GRIDSTACK & EDIT MODE PHYSICS --- */
         
         .grid-stack {
-            min-height: 200px; /* Prevent bouncing when dragging */
+            min-height: 200px; 
             transition: height 0.3s ease;
         }
 
         .grid-stack-item-content {
             border-radius: 2rem;
-            /* Smooth physics settling when dropped */
             transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease, border 0.3s ease !important;
             overflow: hidden !important;
         }
 
-        /* Edit Mode Styles */
         body.edit-mode .grid-stack-item-content {
             cursor: grab !important;
             border: 1px dashed var(--brand-500) !important;
@@ -137,15 +135,12 @@
             cursor: grabbing !important;
         }
 
-        /* OVERRIDE AOS FADE IN EDIT MODE */
-        /* Stops elements from fading out or bugging when dragging */
         body.edit-mode [data-aos] {
             opacity: 1 !important;
             transform: none !important;
             transition-property: transform, box-shadow, border !important; 
         }
 
-        /* THE GHOST (Empty Slot Placeholder) */
         .grid-stack-placeholder > .placeholder-content {
             background-color: rgba(59, 130, 246, 0.05) !important;
             border: 2px dashed var(--brand-500) !important;
@@ -153,7 +148,6 @@
             opacity: 0.5 !important;
         }
 
-        /* THE DRAG PREVIEW (Flying Item) */
         .grid-stack-item.ui-draggable-dragging .grid-stack-item-content {
             transform: scale(1.05) rotate(3deg) !important;
             box-shadow: 
@@ -166,7 +160,6 @@
         .scanline-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.1) 51%); background-size: 100% 4px; z-index: 99; pointer-events: none; }
         .bg-mesh { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(at 0% 0%, var(--brand-500) 0, transparent 50%), radial-gradient(at 100% 100%, var(--accent) 0, transparent 50%); opacity: 0.15; z-index: -1; }
         
-        /* Cursor */
         .cursor-dot { width: 8px; height: 8px; background: var(--cursor-color); position: fixed; top: 0; left: 0; border-radius: 50%; z-index: 999999; pointer-events: none; transform: translate(-50%, -50%); transition: width 0.2s, height 0.2s, background 0.2s, border-radius 0.2s; box-shadow: 0 0 10px var(--cursor-color); }
         .cursor-trail { width: 40px; height: 40px; border: 1px solid var(--cursor-color); position: fixed; top: 0; left: 0; border-radius: 50%; z-index: 999998; pointer-events: none; transform: translate(-50%, -50%); transition: transform 0.1s ease-out, background 0.2s; opacity: 0.5; }
         body.hovering .cursor-dot { width: 12px; height: 12px; background: var(--accent); box-shadow: 0 0 15px var(--accent); }
@@ -186,7 +179,6 @@
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
         @keyframes scanline { 0% { background-position: 0% 0%; } 100% { background-position: 0% 100%; } }
         
-        /* Modal */
         #confirmModal.hidden { opacity: 0; pointer-events: none; transform: scale(0.95); }
         #confirmModal:not(.hidden) { opacity: 1; pointer-events: auto; transform: scale(1); }
     </style>
@@ -282,10 +274,11 @@
         
         <div class="px-10 py-6 border-b border-white/5">
             <div class="flex gap-2 p-1 bg-white/5 rounded-xl border border-white/5">
-                <button onclick="switchTab(0)" class="admin-tab-btn active interactable flex-1 py-2 text-[9px] uppercase font-bold tracking-widest rounded-lg bg-brand-500 text-white transition-all">Project</button>
-                <button onclick="switchTab(1)" class="admin-tab-btn interactable flex-1 py-2 text-[9px] uppercase font-bold tracking-widest rounded-lg text-gray-500 hover:text-white transition-all">Music</button>
-                <button onclick="switchTab(2)" class="admin-tab-btn interactable flex-1 py-2 text-[9px] uppercase font-bold tracking-widest rounded-lg text-gray-500 hover:text-white transition-all">Review</button>
-                <button onclick="switchTab(3)" class="admin-tab-btn interactable flex-1 py-2 text-[9px] uppercase font-bold tracking-widest rounded-lg text-gray-500 hover:text-white transition-all">Sys.</button>
+                <button onclick="switchTab(0)" class="admin-tab-btn active interactable flex-1 py-2 text-[8px] uppercase font-bold tracking-widest rounded-lg bg-brand-500 text-white transition-all">Proj</button>
+                <button onclick="switchTab(1)" class="admin-tab-btn interactable flex-1 py-2 text-[8px] uppercase font-bold tracking-widest rounded-lg text-gray-500 hover:text-white transition-all">Music</button>
+                <button onclick="switchTab(2)" class="admin-tab-btn interactable flex-1 py-2 text-[8px] uppercase font-bold tracking-widest rounded-lg text-gray-500 hover:text-white transition-all">Intel</button>
+                <button onclick="switchTab(3)" class="admin-tab-btn interactable flex-1 py-2 text-[8px] uppercase font-bold tracking-widest rounded-lg text-gray-500 hover:text-white transition-all">Rates</button>
+                <button onclick="switchTab(4)" class="admin-tab-btn interactable flex-1 py-2 text-[8px] uppercase font-bold tracking-widest rounded-lg text-gray-500 hover:text-white transition-all">Sys.</button>
             </div>
         </div>
 
@@ -308,6 +301,7 @@
                         <div id="admin-projects-list" class="space-y-2"></div>
                     </div>
                 </div>
+
                 <div class="w-full flex-shrink-0 h-full overflow-y-auto p-10 space-y-6">
                     <form onsubmit="handleUpload(event, '/api/music', 'music')" class="space-y-6">
                         <p class="text-[10px] font-mono uppercase text-brand-500">Transmission</p>
@@ -332,6 +326,7 @@
                         <div id="admin-music-list" class="space-y-2"></div>
                     </div>
                 </div>
+
                 <div class="w-full flex-shrink-0 h-full overflow-y-auto p-10 space-y-6">
                     <form onsubmit="handleUpload(event, '/api/reviews', 'reviews')" class="space-y-6">
                         <p class="text-[10px] font-mono uppercase text-brand-500">Client Log</p>
@@ -366,6 +361,38 @@
                          <div id="admin-reviews-list" class="space-y-2"></div>
                     </div>
                 </div>
+
+                <div class="w-full flex-shrink-0 h-full overflow-y-auto p-10 space-y-6">
+                    <form onsubmit="handleUpload(event, '/api/pricing', 'pricing')" class="space-y-6">
+                        <p class="text-[10px] font-mono uppercase text-brand-500">Service Tier Config</p>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="text" name="tier" required placeholder="TIER_ID (e.g. Tier 01)" class="interactable w-full bg-white/5 border border-white/10 rounded-xl p-4 font-mono text-xs focus:border-brand-500 outline-none text-[var(--text-main)]">
+                            <input type="text" name="title" required placeholder="TITLE (e.g. Starter)" class="interactable w-full bg-white/5 border border-white/10 rounded-xl p-4 font-mono text-xs focus:border-brand-500 outline-none text-[var(--text-main)]">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="number" name="price" required placeholder="PRICE (e.g. 500)" class="interactable w-full bg-white/5 border border-white/10 rounded-xl p-4 font-mono text-xs focus:border-brand-500 outline-none text-[var(--text-main)]">
+                            <input type="text" name="currency" required placeholder="CURRENCY (e.g. RBX)" class="interactable w-full bg-white/5 border border-white/10 rounded-xl p-4 font-mono text-xs focus:border-brand-500 outline-none text-[var(--text-main)]">
+                        </div>
+
+                        <textarea name="perks" required placeholder="PERKS (Separate items with a comma. e.g. 'Custom Footer, High-Res Banners')" class="interactable w-full bg-white/5 border border-white/10 rounded-xl p-4 font-mono text-xs focus:border-brand-500 outline-none text-[var(--text-main)] h-24"></textarea>
+
+                        <div class="flex items-center gap-4 bg-white/5 border border-white/10 p-4 rounded-xl">
+                            <input type="checkbox" name="isElite" id="isEliteToggle" value="true" class="interactable w-4 h-4 accent-brand-500 cursor-pointer">
+                            <label for="isEliteToggle" class="text-[10px] font-mono uppercase text-[var(--text-main)] cursor-pointer">Featured Elite Style (Shiny Gradient Outline)</label>
+                        </div>
+
+                        <input type="url" name="link" placeholder="PURCHASE LINK (e.g. Discord URL)" class="interactable w-full bg-white/5 border border-white/10 rounded-xl p-4 font-mono text-xs focus:border-brand-500 outline-none text-[var(--text-main)]">
+
+                        <button type="submit" class="interactable w-full py-4 bg-[var(--text-main)] text-[var(--bg-main)] font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-brand-500 hover:text-white transition-all">Deploy Tier</button>
+                    </form>
+                    <div class="pt-8 border-t border-white/10">
+                         <p class="text-[10px] font-mono uppercase text-gray-500 mb-4">Quick Deletion</p>
+                         <div id="admin-pricing-list" class="space-y-2"></div>
+                    </div>
+                </div>
+
                 <div class="w-full flex-shrink-0 h-full overflow-y-auto p-10 space-y-6">
                     <p class="text-[10px] font-mono uppercase text-brand-500">Global Config</p>
                     <form onsubmit="handleUpload(event, '/api/settings/pfp', 'pfp')" class="space-y-4">
@@ -383,6 +410,7 @@
                     <hr class="border-white/10">
                     <button onclick="handleLogout()" class="interactable w-full py-4 bg-red-900/20 text-red-500 border border-red-500/20 font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-red-500 hover:text-white transition-all">Terminate Session</button>
                 </div>
+
             </div>
         </div>
     </div>
@@ -490,52 +518,7 @@
                 <h2 class="text-4xl font-bold mb-6">Service Protocols</h2>
                 <p class="text-[var(--text-muted)]">Select an acquisition tier to initiate development.</p>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="glass p-10 rounded-[2.5rem] flex flex-col group hover:border-brand-500/50 transition-all duration-500">
-                    <span class="text-[10px] font-mono text-gray-500 uppercase tracking-[0.3em] mb-4">Tier 01</span>
-                    <h3 class="text-2xl font-bold mb-6">Starter</h3>
-                    <div class="flex items-baseline gap-2 mb-10">
-                        <span class="text-5xl font-black">500</span>
-                        <span class="text-gray-500 font-mono text-sm">RBX</span>
-                    </div>
-                    <ul class="space-y-4 mb-12 flex-1 text-sm text-[var(--text-muted)]">
-                        <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500"></i> 05 High-Res Banners</li>
-                        <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500"></i> Custom Footer</li>
-                    </ul>
-                    <a href="https://discord.gg/druKVJHJZz" target="_blank" class="interactable w-full py-4 rounded-2xl bg-white/5 hover:bg-white hover:text-black text-[var(--text-main)] text-center font-bold uppercase tracking-widest text-[10px] transition-all">Acquire</a>
-                </div>
-
-                <div class="relative p-1 rounded-[2.5rem] bg-gradient-to-b from-brand-500 to-accent group hover:scale-[1.02] transition-all duration-500">
-                    <div class="bg-white h-full w-full rounded-[2.4rem] p-10 flex flex-col relative overflow-hidden">
-                        <div class="absolute top-0 right-0 p-6"><i class="fa-solid fa-bolt text-brand-500 animate-pulse"></i></div>
-                        <span class="text-[10px] font-mono text-brand-500 uppercase tracking-[0.3em] mb-4">Tier 03</span>
-                        <h3 class="text-2xl font-bold mb-6 text-black">Elite</h3>
-                        <div class="flex items-baseline gap-2 mb-10">
-                            <span class="text-5xl font-black text-black">3000</span>
-                            <span class="text-gray-900 font-mono text-sm">RBX</span>
-                        </div>
-                        <ul class="space-y-4 mb-12 flex-1 text-sm text-gray-900 font-semibold">
-                            <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500"></i> 25 High-Res Banners</li>
-                            <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500"></i> Priority Rendering</li>
-                        </ul>
-                        <a href="https://discord.gg/druKVJHJZz" target="_blank" class="interactable w-full py-4 rounded-2xl bg-black text-white text-center font-bold uppercase tracking-widest text-[10px] transition-all shadow-xl hover:bg-gray-800">Initialize Tier</a>
-                    </div>
-                </div>
-
-                <div class="glass p-10 rounded-[2.5rem] flex flex-col group hover:border-brand-500/50 transition-all duration-500">
-                    <span class="text-[10px] font-mono text-gray-500 uppercase tracking-[0.3em] mb-2">Tier 02</span>
-                    <h3 class="text-2xl font-bold mb-6">Essential</h3>
-                    <div class="flex items-baseline gap-2 mb-10">
-                        <span class="text-5xl font-black">1000</span>
-                        <span class="text-gray-500 font-mono text-sm">RBX</span>
-                    </div>
-                    <ul class="space-y-4 mb-12 flex-1 text-sm text-[var(--text-muted)]">
-                        <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500"></i> 15 High-Res Banners</li>
-                        <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500"></i> Multi-format Export</li>
-                    </ul>
-                    <a href="https://discord.gg/druKVJHJZz" target="_blank" class="interactable w-full py-4 rounded-2xl bg-white/5 hover:bg-white hover:text-black text-[var(--text-main)] text-center font-bold uppercase tracking-widest text-[10px] transition-all">Acquire</a>
-                </div>
-            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center" id="pricing-grid"></div>
         </div>
     </section>
 
@@ -643,8 +626,8 @@
 
         // --- APP STATE ---
         let playlist = [], currentTrackIndex = 0, isPlaying = false, isLooping = false;
-        let allProjects = [], allReviews = [], allMusic = [];
-        let projectGrid, reviewGrid; // GRIDSTACK VARIABLES
+        let allProjects = [], allReviews = [], allMusic = [], allPricing = [];
+        let projectGrid, reviewGrid;
         const audio = document.getElementById('audio');
         const themes = [null, 'snow', 'toxic']; 
         let currentThemeIndex = 0;
@@ -715,6 +698,7 @@
                 await loadMusic();
                 await loadProjects();
                 await loadReviews();
+                await loadPricing(); // NEW PRICING DATA FETCH
                 const auth = await fetch('/api/me').then(r => r.json()).catch(() => ({ isAdmin: false }));
                 renderAuth(auth.isAdmin);
                 const settings = await fetch('/api/settings').then(r => r.json());
@@ -742,7 +726,6 @@
                     <button onclick="toggleAdmin()" class="px-5 py-2 glass rounded-full text-[10px] font-black text-brand-500 tracking-widest border-brand-500/20 hover:bg-brand-500 hover:text-white transition-all interactable">ROOT</button>
                 `;
                 renderAdminLists();
-                // Set theme icon on load
                 const icon = document.getElementById('theme-icon');
                 if(icon) {
                      const theme = themes[currentThemeIndex];
@@ -761,7 +744,6 @@
             }
         }
 
-        // --- DEV KEY AUTHENTICATION ---
         function openDevModal() {
             document.getElementById('devKeyModal').classList.remove('hidden');
             document.getElementById('devKeyInput').focus();
@@ -788,7 +770,7 @@
                 });
 
                 if(res.ok) {
-                    location.reload(); // Refresh to load admin state
+                    location.reload(); 
                 } else {
                     input.value = '';
                     input.placeholder = 'ACCESS_DENIED';
@@ -798,12 +780,10 @@
                         input.classList.remove('border-red-500');
                     }, 2000);
                 }
-            } catch(e) { 
-                console.error("Auth System Error:", e); 
-            }
+            } catch(e) { console.error("Auth System Error:", e); }
         }
 
-        // --- NEW GRIDSTACK EDIT MODE ---
+        // --- GRIDSTACK EDIT MODE ---
         let isEditMode = false;
 
         async function toggleEditLayout() {
@@ -813,22 +793,18 @@
             const body = document.body;
 
             if(isEditMode) {
-                // --- ENTER EDIT MODE ---
                 btn.classList.add('bg-brand-500', 'text-white');
                 btn.innerText = "DONE";
                 body.classList.add('edit-mode');
                 
-                // Unlock the grids
                 if(projectGrid) projectGrid.setStatic(false);
                 if(reviewGrid) reviewGrid.setStatic(false);
                 
                 document.body.addEventListener('mousedown', () => document.body.classList.add('is-dragging'));
                 document.body.addEventListener('mouseup', () => document.body.classList.remove('is-dragging'));
             } else {
-                // --- SAVE & EXIT ---
                 btn.innerText = "SAVING...";
                 
-                // 1. Lock grids and save layouts locally for exact positions/sizes
                 if(projectGrid) {
                     projectGrid.setStatic(true);
                     localStorage.setItem('axel_projects_layout', JSON.stringify(projectGrid.save()));
@@ -838,14 +814,12 @@
                     localStorage.setItem('axel_reviews_layout', JSON.stringify(reviewGrid.save()));
                 }
 
-                // 2. Map grid layout array back to the backend endpoint just in case
                 await Promise.all([saveOrder('projects'), saveOrder('reviews')]);
 
                 btn.classList.remove('bg-brand-500', 'text-white');
                 btn.innerText = "EDIT LAYOUT";
                 body.classList.remove('edit-mode');
                 
-                // Refresh AOS animations only after we exit edit mode
                 setTimeout(() => AOS.refresh(), 100);
             }
         }
@@ -853,8 +827,6 @@
         async function saveOrder(type) {
             const grid = type === 'projects' ? projectGrid : reviewGrid;
             if(!grid) return;
-
-            // GridStack .save() returns visual order automatically
             const ids = grid.save().map(item => item.id).filter(id => id);
             
             try {
@@ -871,15 +843,14 @@
             allProjects = await fetch('/api/projects').then(r => r.json()).catch(() => []);
             if(!allProjects.length) allProjects = [{id: '1', title: 'Neo-Tokyo', image: 'https://images.unsplash.com/photo-1558655146-d09347e0b7a8?q=80'}];
             
-            // Fetch saved positions if any exist in the browser
             let savedLayout = JSON.parse(localStorage.getItem('axel_projects_layout')) || [];
             let layoutMap = {};
             savedLayout.forEach(item => layoutMap[item.id] = item);
 
-            if(projectGrid) projectGrid.destroy(false); // Destroy logic but keep the DOM node
+            if(projectGrid) projectGrid.destroy(false); 
 
             document.getElementById('past-work-grid').innerHTML = allProjects.map((p, i) => {
-                let layout = layoutMap[p.id] || { w: 4, h: 4 }; // Default squares if new project
+                let layout = layoutMap[p.id] || { w: 4, h: 4 }; 
                 let posAttrs = (layout.x !== undefined && layout.y !== undefined) ? `gs-x="${layout.x}" gs-y="${layout.y}"` : '';
                 
                 return `
@@ -896,13 +867,7 @@
                 </div>`;
             }).join('');
             
-            projectGrid = GridStack.init({
-                staticGrid: true, // starts locked
-                cellHeight: 80,
-                margin: 20,
-                animate: true
-            }, '#past-work-grid');
-
+            projectGrid = GridStack.init({ staticGrid: true, cellHeight: 80, margin: 20, animate: true }, '#past-work-grid');
             renderAdminLists();
             setTimeout(() => AOS.refresh(), 100);
         }
@@ -919,7 +884,7 @@
             if(reviewGrid) reviewGrid.destroy(false);
 
             document.getElementById('reviews-grid').innerHTML = display.map((r, i) => {
-                let layout = layoutMap[r.id] || { w: 4, h: 3 }; // Default horizontal rectangles
+                let layout = layoutMap[r.id] || { w: 4, h: 3 };
                 let posAttrs = (layout.x !== undefined && layout.y !== undefined) ? `gs-x="${layout.x}" gs-y="${layout.y}"` : '';
                 
                 return `
@@ -938,13 +903,7 @@
                 </div>`;
             }).join('');
 
-            reviewGrid = GridStack.init({
-                staticGrid: true, // starts locked
-                cellHeight: 80,
-                margin: 20,
-                animate: true
-            }, '#reviews-grid');
-
+            reviewGrid = GridStack.init({ staticGrid: true, cellHeight: 80, margin: 20, animate: true }, '#reviews-grid');
             renderAdminLists();
             setTimeout(() => AOS.refresh(), 100);
         }
@@ -952,6 +911,61 @@
         async function loadMusic() {
             allMusic = await fetch('/api/music').then(r => r.json()).catch(()=>[]);
             playlist = allMusic.length ? allMusic : [{ title: "CYBERPUNK", artist: "Hyper", cover: "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80", file: "" }];
+        }
+
+        async function loadPricing() {
+            // Mocking the call, waiting for backend
+            allPricing = await fetch('/api/pricing').then(r => r.json()).catch(() => []);
+            
+            // Default placeholder tiers if the database is empty or offline
+            if(!allPricing.length) {
+                allPricing = [
+                    { id: '1', tier: 'Tier 01', title: 'Starter', price: 500, currency: 'RBX', perks: '05 High-Res Banners, Custom Footer', isElite: false, link: 'https://discord.gg/druKVJHJZz' },
+                    { id: '2', tier: 'Tier 03', title: 'Elite', price: 3000, currency: 'RBX', perks: '25 High-Res Banners, Priority Rendering', isElite: true, link: 'https://discord.gg/druKVJHJZz' },
+                    { id: '3', tier: 'Tier 02', title: 'Essential', price: 1000, currency: 'RBX', perks: '15 High-Res Banners, Multi-format Export', isElite: false, link: 'https://discord.gg/druKVJHJZz' }
+                ];
+            }
+
+            document.getElementById('pricing-grid').innerHTML = allPricing.map(p => {
+                // Ensure perks is converted to an array based on commas
+                const perksArray = (p.perks || '').split(',').map(item => item.trim()).filter(item => item);
+                const perksHtml = perksArray.map(perk => `<li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500"></i> ${perk}</li>`).join('');
+
+                if(p.isElite) {
+                    return `
+                    <div class="relative p-1 rounded-[2.5rem] bg-gradient-to-b from-brand-500 to-accent group hover:scale-[1.02] transition-all duration-500">
+                        <div class="bg-white h-full w-full rounded-[2.4rem] p-10 flex flex-col relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-6"><i class="fa-solid fa-bolt text-brand-500 animate-pulse"></i></div>
+                            <span class="text-[10px] font-mono text-brand-500 uppercase tracking-[0.3em] mb-4">${p.tier}</span>
+                            <h3 class="text-2xl font-bold mb-6 text-black">${p.title}</h3>
+                            <div class="flex items-baseline gap-2 mb-10">
+                                <span class="text-5xl font-black text-black">${p.price}</span>
+                                <span class="text-gray-900 font-mono text-sm ml-2">${p.currency}</span>
+                            </div>
+                            <ul class="space-y-4 mb-12 flex-1 text-sm text-gray-900 font-semibold">
+                                ${perksHtml}
+                            </ul>
+                            <a href="${p.link || '#'}" target="_blank" class="interactable w-full py-4 rounded-2xl bg-black text-white text-center font-bold uppercase tracking-widest text-[10px] transition-all shadow-xl hover:bg-gray-800">Initialize Tier</a>
+                        </div>
+                    </div>`;
+                } else {
+                    return `
+                    <div class="glass p-10 rounded-[2.5rem] flex flex-col group hover:border-brand-500/50 transition-all duration-500">
+                        <span class="text-[10px] font-mono text-gray-500 uppercase tracking-[0.3em] mb-4">${p.tier}</span>
+                        <h3 class="text-2xl font-bold mb-6">${p.title}</h3>
+                        <div class="flex items-baseline gap-2 mb-10">
+                            <span class="text-5xl font-black">${p.price}</span>
+                            <span class="text-gray-500 font-mono text-sm ml-2">${p.currency}</span>
+                        </div>
+                        <ul class="space-y-4 mb-12 flex-1 text-sm text-[var(--text-muted)]">
+                            ${perksHtml}
+                        </ul>
+                        <a href="${p.link || '#'}" target="_blank" class="interactable w-full py-4 rounded-2xl bg-white/5 hover:bg-white hover:text-black text-[var(--text-main)] text-center font-bold uppercase tracking-widest text-[10px] transition-all">Acquire</a>
+                    </div>`;
+                }
+            }).join('');
+            
+            renderAdminLists();
         }
 
         // --- ADMIN FUNCTIONS ---
@@ -988,6 +1002,7 @@
             createList(allProjects, 'projects', p => `<img src="${p.image}" class="w-8 h-8 rounded object-cover"><span class="text-[10px] font-mono flex-1 truncate text-gray-300">${p.title}</span>`);
             createList(allMusic, 'music', m => `<img src="${m.cover}" class="w-8 h-8 rounded object-cover"><div class="flex-1 truncate"><p class="text-[10px] font-mono text-gray-300">${m.title}</p></div>`);
             createList(allReviews, 'reviews', r => `<span class="text-[10px] font-mono flex-1 truncate text-gray-300">${r.name}</span>`);
+            createList(allPricing, 'pricing', p => `<span class="text-[10px] font-mono flex-1 truncate text-gray-300">${p.title} - ${p.price} ${p.currency}</span>`);
         }
 
         async function deleteItem(type, id) {
@@ -996,6 +1011,7 @@
                 if(type === 'projects') await loadProjects();
                 else if(type === 'music') await loadMusic();
                 else if(type === 'reviews') await loadReviews();
+                else if(type === 'pricing') await loadPricing();
             });
         }
 
@@ -1025,12 +1041,29 @@
             btn.innerText = "TRANSMITTING..."; btn.disabled = true; btn.classList.add('opacity-50');
 
             try {
-                const res = await fetch(endpoint, { method: 'POST', body: new FormData(form) });
+                // Determine if we're sending FormData (files) or JSON (for Pricing)
+                let fetchOptions = { method: 'POST' };
+                
+                if (type === 'pricing') {
+                    // For pricing we can just send JSON since there are no image files
+                    const formData = new FormData(form);
+                    const data = Object.fromEntries(formData.entries());
+                    // Convert checkbox value to boolean
+                    data.isElite = formData.has('isElite');
+                    fetchOptions.headers = { 'Content-Type': 'application/json' };
+                    fetchOptions.body = JSON.stringify(data);
+                } else {
+                    fetchOptions.body = new FormData(form);
+                }
+
+                const res = await fetch(endpoint, fetchOptions);
+                
                 if (res.ok) {
                     btn.innerText = "SUCCESS"; btn.classList.replace('bg-[var(--text-main)]','bg-green-500');
                     if(type === 'projects') await loadProjects();
                     else if(type === 'music') await loadMusic();
                     else if(type === 'reviews') await loadReviews();
+                    else if(type === 'pricing') await loadPricing();
                     else if(type === 'pfp') { location.reload(); return; }
 
                     form.reset();
