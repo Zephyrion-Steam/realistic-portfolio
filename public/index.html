@@ -2,7 +2,7 @@
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>AXEL | Digital Architect</title>
     <link id="favicon" rel="icon" href="/favicon.ico?v=4">
     
@@ -92,16 +92,28 @@
             --glass-border: rgba(168, 85, 247, 0.2);
         }
 
-        /* --- UTILS --- */
-        * { cursor: none !important; -webkit-user-select: none; user-select: none; }
-        input, textarea, [contenteditable] { -webkit-user-select: text; user-select: text; }
-        
+        /* --- UTILS & CURSOR FIXES --- */
         body { 
             background-color: var(--bg-main); 
             color: var(--text-main); 
             overflow-x: hidden; 
             scrollbar-gutter: stable; 
             transition: background-color 0.5s, color 0.5s; 
+            -webkit-user-select: none; user-select: none;
+        }
+        
+        input, textarea, [contenteditable] { -webkit-user-select: text; user-select: text; }
+
+        /* Only apply custom cursor on desktop/fine pointer devices */
+        @media (pointer: fine) {
+            * { cursor: none !important; }
+            input, textarea, [contenteditable] { cursor: text !important; }
+        }
+
+        /* Hide custom cursor elements and restore native touch/auto cursor on mobile */
+        @media (pointer: coarse) {
+            #cursor-dot, #cursor-trail { display: none !important; }
+            * { cursor: auto !important; }
         }
         
         ::-webkit-scrollbar { width: 6px; }
@@ -110,41 +122,25 @@
 
         .glass { background: var(--glass-bg); backdrop-filter: blur(12px) saturate(180%); border: 1px solid var(--glass-border); }
 
-        /* --- MASONRY & EDIT MODE PHYSICS --- */
-        
-        /* 1. Default View */
+        /* --- UNIFIED GRID SYSTEM --- */
+        /* Both view and edit mode now use the exact same grid structure to prevent jumping */
         .masonry-grid { 
-            column-count: 1; 
-            column-gap: 2rem; 
-            transition: opacity 0.3s ease;
-        }
-        @media (min-width: 768px) { .masonry-grid { column-count: 2; } }
-        @media (min-width: 1280px) { .masonry-grid { column-count: 3; } }
-        
-        .masonry-item { 
-            break-inside: avoid; 
-            margin-bottom: 2rem; 
-            transform: translateZ(0);
-            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
-        }
-        
-        /* 2. Edit Mode */
-        body.edit-mode .masonry-grid {
             display: grid;
             grid-template-columns: 1fr;
             gap: 2rem;
-            column-count: auto; 
-            align-items: start; 
+            align-items: start; /* Crucial for variable heights */
+            transition: opacity 0.3s ease;
         }
-        @media (min-width: 768px) {
-            body.edit-mode .masonry-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (min-width: 1280px) {
-            body.edit-mode .masonry-grid { grid-template-columns: repeat(3, 1fr); }
+        @media (min-width: 768px) { .masonry-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1280px) { .masonry-grid { grid-template-columns: repeat(3, 1fr); } }
+        
+        .masonry-item { 
+            transform: translateZ(0);
+            /* Removed transform transition to stop it fighting with Sortable's animations */
+            transition: box-shadow 0.3s ease;
         }
         
-        /* OVERRIDE AOS FADE IN EDIT MODE */
-        /* This ensures no items fade out or hide when you start editing */
+        /* 2. Edit Mode Enhancements */
         body.edit-mode [data-aos] {
             opacity: 1 !important;
             transform: none !important;
@@ -152,51 +148,48 @@
         }
 
         body.edit-mode .masonry-item {
-            margin-bottom: 0;
             cursor: grab !important;
-            border: 1px dashed var(--brand-500);
+            border: 2px dashed var(--brand-500);
             background: rgba(59, 130, 246, 0.05);
             pointer-events: auto;
         }
+        body.edit-mode .masonry-item:active {
+            cursor: grabbing !important;
+        }
         
-        /* 3. THE GHOST (Empty Slot) */
+        /* 3. THE GHOST (Empty Slot Preview) */
         .sortable-ghost { 
-            opacity: 0.1 !important;
+            opacity: 0.3 !important;
             background: var(--brand-500) !important;
             border: 2px dashed var(--brand-500) !important;
             border-radius: 2rem;
+            transform: scale(0.98); /* Slight indent to show where it drops */
         }
-        .sortable-ghost > * { visibility: hidden; } /* Hide content of the hole */
+        .sortable-ghost > * { visibility: hidden; } /* Hide the content inside the ghost hole */
 
         /* 4. THE DRAG PREVIEW (Flying Item) */
         .sortable-drag { 
             opacity: 1 !important; 
             z-index: 99999 !important; 
             cursor: grabbing !important;
-            position: fixed !important; /* Force it to follow viewport/mouse */
-            pointer-events: none !important; /* Let mouse pass through to grid below */
-            
-            /* Initial Lift State - JS adds rotation */
-            box-shadow: 
-                0 25px 50px -12px rgba(0,0,0,0.5),
-                0 0 0 2px var(--brand-500);
-            background: var(--bg-card); 
-            border-radius: 2rem;
-            overflow: hidden;
-            transform-origin: center center;
+            box-shadow: 0 35px 60px -15px rgba(0,0,0,0.6), 0 0 0 2px var(--brand-500) !important;
+            background: var(--bg-card) !important; 
+            border-radius: 2rem !important;
+            /* Static rotation and scale while dragging */
+            transform: rotate(-3deg) scale(1.03) !important; 
+            pointer-events: none !important; /* Let mouse interact with grid below */
         }
 
         /* --- GLOBAL FX --- */
         .scanline-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.1) 51%); background-size: 100% 4px; z-index: 99; pointer-events: none; }
         .bg-mesh { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(at 0% 0%, var(--brand-500) 0, transparent 50%), radial-gradient(at 100% 100%, var(--accent) 0, transparent 50%); opacity: 0.15; z-index: -1; }
         
-        /* Cursor */
+        /* Cursor logic */
         .cursor-dot { width: 8px; height: 8px; background: var(--cursor-color); position: fixed; top: 0; left: 0; border-radius: 50%; z-index: 999999; pointer-events: none; transform: translate(-50%, -50%); transition: width 0.2s, height 0.2s, background 0.2s, border-radius 0.2s; box-shadow: 0 0 10px var(--cursor-color); }
         .cursor-trail { width: 40px; height: 40px; border: 1px solid var(--cursor-color); position: fixed; top: 0; left: 0; border-radius: 50%; z-index: 999998; pointer-events: none; transform: translate(-50%, -50%); transition: transform 0.1s ease-out, background 0.2s; opacity: 0.5; }
         body.hovering .cursor-dot { width: 12px; height: 12px; background: var(--accent); box-shadow: 0 0 15px var(--accent); }
         body.hovering .cursor-trail { background: rgba(255, 255, 255, 0.1); border-color: var(--accent); transform: translate(-50%, -50%) scale(1.5); }
         
-        /* Hide cursor when dragging to avoid double cursor */
         body.is-dragging .cursor-dot, 
         body.is-dragging .cursor-trail { opacity: 0; }
 
@@ -235,7 +228,7 @@
         </div>
     </div>
 
-<div id="devKeyModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm transition-all duration-300 hidden">
+    <div id="devKeyModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm transition-all duration-300 hidden">
         <div class="bg-[var(--bg-card)] border border-[var(--brand-500)] p-8 rounded-2xl max-w-sm w-full mx-6 shadow-[0_0_50px_rgba(59,130,246,0.2)] text-center relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-[var(--brand-500)]"></div>
             <h3 class="text-xl font-bold font-mono uppercase mb-4 text-[var(--text-main)]">Root Override</h3>
@@ -776,7 +769,6 @@
                      else icon.className = "fa-solid fa-moon text-[var(--brand-500)]";
                 }
             } else {
-                // UPDATED: Show both Discord and Key icons
                 container.innerHTML = `
                     ${themeBtn}
                     <div class="flex items-center gap-3 border-l border-white/10 pl-3 ml-1">
@@ -831,35 +823,6 @@
 
         // --- NEW DRAG PHYSICS & EDIT MODE ---
         let isEditMode = false;
-        let physicsInterval;
-        let lastMouseX = 0;
-        let dragVelocityX = 0;
-        let currentDragEl = null;
-
-        // Track mouse velocity for the "tilt" effect
-        document.addEventListener('mousemove', (e) => {
-            if(!isEditMode) return;
-            const deltaX = e.clientX - lastMouseX;
-            lastMouseX = e.clientX;
-            dragVelocityX = deltaX; // Store velocity
-        });
-
-        function handleDragPhysics() {
-            if(!currentDragEl) return;
-            
-            // Calculate tilt based on velocity (max 12 deg)
-            const maxTilt = 12;
-            const tilt = Math.max(Math.min(dragVelocityX * 0.8, maxTilt), -maxTilt);
-            
-            // Apply physics to the dragged clone
-            // NOTE: We use !important in CSS to force position:fixed, 
-            // but we need to let Sortable handle top/left, so we only touch transform here.
-            currentDragEl.style.transform += ` rotate(${tilt}deg) scale(1.05)`;
-            
-            // Friction/Decay
-            dragVelocityX *= 0.85;
-            if (Math.abs(dragVelocityX) < 0.1) dragVelocityX = 0;
-        }
 
         async function toggleEditLayout() {
             isEditMode = !isEditMode;
@@ -877,34 +840,21 @@
                 
                 // FLUID PHYSICS CONFIG
                 const sortConfig = {
-                    animation: 400, // Longer animation for fluidity
-                    easing: "cubic-bezier(0.2, 0, 0, 1)", // "Ease out expo" feel
-                    ghostClass: 'sortable-ghost',
-                    dragClass: 'sortable-drag',
-                    
-                    // CRITICAL: Force Fallback makes the clone follow the mouse perfectly
-                    // instead of using the browser's native drag ghost.
-                    forceFallback: true, 
-                    fallbackOnBody: true, 
-                    fallbackTolerance: 3, 
-                    
-                    swapThreshold: 0.65, // Needs to overlap more to trigger swap
+                    animation: 350, // Ultra-smooth block shifting
+                    easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+                    ghostClass: 'sortable-ghost', // Empty box routing style
+                    dragClass: 'sortable-drag', // Fully rotated custom dragged block
+                    forceFallback: true, // Forces our custom CSS rather than browser native dragging
+                    fallbackClass: 'sortable-drag',
+                    fallbackOnBody: true,
+                    fallbackTolerance: 3,
+                    swapThreshold: 0.65, // Generous swap threshold
                     
                     onStart: function(evt) {
                         document.body.classList.add('is-dragging');
-                        // Start the physics loop for the tilt effect
-                        setTimeout(() => {
-                            const dragEl = document.querySelector('.sortable-drag');
-                            if(dragEl) {
-                                currentDragEl = dragEl;
-                                physicsInterval = setInterval(handleDragPhysics, 16);
-                            }
-                        }, 10);
                     },
                     onEnd: function(evt) {
                         document.body.classList.remove('is-dragging');
-                        currentDragEl = null;
-                        clearInterval(physicsInterval);
                     }
                 };
 
@@ -922,7 +872,6 @@
                 // --- SAVE & EXIT ---
                 btn.innerText = "SAVING...";
                 
-                clearInterval(physicsInterval);
                 await Promise.all([saveOrder('projects'), saveOrder('reviews')]);
 
                 btn.classList.remove('bg-brand-500', 'text-white');
@@ -932,7 +881,7 @@
                 if(sortables['projects']) { sortables['projects'].destroy(); sortables['projects'] = null; }
                 if(sortables['reviews']) { sortables['reviews'].destroy(); sortables['reviews'] = null; }
 
-                // Refresh AOS animations only after we exit edit mode
+                // Refresh AOS animations gently after layout locked
                 setTimeout(() => AOS.refresh(), 100);
             }
         }
