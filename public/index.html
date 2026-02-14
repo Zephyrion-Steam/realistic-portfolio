@@ -400,7 +400,7 @@
                             <span class="text-[9px] font-mono uppercase text-gray-400 block mb-2">Main Profile Visual</span>
                             <div class="flex items-center gap-4">
                                 <div class="w-16 h-16 rounded-full overflow-hidden bg-white/10 border border-white/20 flex-shrink-0">
-                                    <img id="current-pfp-preview" src="/assets/pfp.jpg" class="w-full h-full object-cover aspect-square">
+                                    <img id="current-pfp-preview" src="https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80" class="w-full h-full object-cover aspect-square">
                                 </div>
                                 <input type="file" name="pfp" onchange="previewFile(this, 'current-pfp-preview')" class="interactable block w-full text-[10px] text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:bg-white/10 file:text-white hover:file:bg-brand-500 transition-all">
                             </div>
@@ -441,7 +441,7 @@
             <div class="lg:col-span-5 relative" data-aos="zoom-in" data-aos-delay="200">
                 <div class="relative z-10 animate-float">
                     <div class="w-full aspect-square rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl">
-                        <img id="main-pfp" src="/assets/pfp.jpg" onerror="this.src='https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80'" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000">
+                        <img id="main-pfp" src="https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80" onerror="this.src='https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80'" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000">
                     </div>
                     
                     <div class="absolute -bottom-6 -right-6 md:-right-12 w-80 glass p-5 rounded-2xl shadow-2xl border border-brand-500/20">
@@ -472,7 +472,7 @@
                              <div class="relative group">
                                 <button onclick="toggleVolumeSlider()" class="interactable text-gray-500 hover:text-[var(--text-main)] text-[10px]"><i class="fa-solid fa-volume-high"></i></button>
                                 <div id="volume-popup" class="absolute bottom-full right-0 mb-3 w-8 h-40 bg-dark border border-white/10 rounded-full flex justify-center items-end py-4 shadow-xl opacity-0 pointer-events-none transition-all duration-300 transform translate-y-2 z-50">
-                                    <input type="range" min="0" max="100" value="10" oninput="setVolume(this.value)" class="interactable vertical-slider" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical;">
+                                    <input type="range" min="0" max="100" value="10" oninput="setVolume(this.value)" class="interactable vertical-slider" style="writing-mode: vertical-lr; direction: rtl; -webkit-appearance: slider-vertical;">
                                 </div>
                              </div>
                         </div>
@@ -522,13 +522,15 @@
         </div>
     </section>
 
-    <footer class="py-20 border-t border-white/5">
-        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
-            <p class="text-gray-600 font-mono text-[10px] uppercase tracking-widest">&copy; 2026 AXEL ARCHIVES // ALL RIGHTS RESERVED</p>
-            <div class="flex gap-8 text-gray-500 text-sm">
-                <a href="https://discord.gg/druKVJHJZz" target="_blank" class="interactable hover:text-white transition-colors"><i class="fa-brands fa-discord"></i></a>
+    <footer class="py-20 border-t border-white/5 relative">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8 relative">
+            <div class="flex-1 flex justify-start">
+                <p class="text-gray-600 font-mono text-[10px] uppercase tracking-widest">&copy; 2026 AXEL ARCHIVES // ALL RIGHTS RESERVED</p>
             </div>
-            <div class="flex items-center gap-2 font-mono text-[10px] text-gray-600">
+            <div class="flex-1 flex justify-center gap-8 text-gray-500 text-sm">
+                <a href="https://discord.gg/druKVJHJZz" target="_blank" class="interactable hover:text-white transition-colors"><i class="fa-brands fa-discord text-2xl"></i></a>
+            </div>
+            <div class="flex-1 flex justify-end items-center gap-2 font-mono text-[10px] text-gray-600">
                 <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                 CORE_SYSTEM_ACTIVE
             </div>
@@ -698,7 +700,7 @@
                 await loadMusic();
                 await loadProjects();
                 await loadReviews();
-                await loadPricing(); // NEW PRICING DATA FETCH
+                await loadPricing(); 
                 const auth = await fetch('/api/me').then(r => r.json()).catch(() => ({ isAdmin: false }));
                 renderAuth(auth.isAdmin);
                 const settings = await fetch('/api/settings').then(r => r.json());
@@ -849,6 +851,7 @@
 
             if(projectGrid) projectGrid.destroy(false); 
 
+            // FIX: Removed `data-aos="fade-up"` inside the GridStack content to fix invisible images
             document.getElementById('past-work-grid').innerHTML = allProjects.map((p, i) => {
                 let layout = layoutMap[p.id] || { w: 4, h: 4 }; 
                 let posAttrs = (layout.x !== undefined && layout.y !== undefined) ? `gs-x="${layout.x}" gs-y="${layout.y}"` : '';
@@ -856,8 +859,7 @@
                 return `
                 <div class="grid-stack-item" gs-id="${p.id}" gs-w="${layout.w}" gs-h="${layout.h}" ${posAttrs}>
                     <div class="grid-stack-item-content group relative overflow-hidden rounded-[2rem] bg-white/5 border border-white/5 interactable" 
-                         onclick="openModal('${p.image}')" 
-                         data-aos="fade-up" data-aos-delay="${(i%10)*50}">
+                         onclick="openModal('${p.image}')">
                         <img src="${p.image}" class="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110 group-hover:rotate-1 pointer-events-none">
                         <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8 pointer-events-none">
                             <p class="text-[10px] font-mono text-brand-500 uppercase tracking-[0.3em] mb-2">Project_${p.id}</p>
@@ -883,13 +885,14 @@
 
             if(reviewGrid) reviewGrid.destroy(false);
 
+            // FIX: Removed `data-aos="fade-up"` to fix invisible reviews
             document.getElementById('reviews-grid').innerHTML = display.map((r, i) => {
                 let layout = layoutMap[r.id] || { w: 4, h: 3 };
                 let posAttrs = (layout.x !== undefined && layout.y !== undefined) ? `gs-x="${layout.x}" gs-y="${layout.y}"` : '';
                 
                 return `
                 <div class="grid-stack-item" gs-id="${r.id}" gs-w="${layout.w}" gs-h="${layout.h}" ${posAttrs}>
-                    <div class="grid-stack-item-content glass p-8 rounded-[2rem] border border-white/5 flex flex-col h-full relative" data-aos="fade-up" data-aos-delay="${(i%10)*50}">
+                    <div class="grid-stack-item-content glass p-8 rounded-[2rem] border border-white/5 flex flex-col h-full relative">
                         <div class="absolute top-8 left-8 text-[9px] font-mono text-gray-500 opacity-50">${r.date || 'RECENT'}</div>
                         <div class="flex items-center gap-4 mb-6 mt-6 pointer-events-none">
                             <img src="${r.avatar}" class="w-10 h-10 rounded-full object-cover bg-white/5">
@@ -914,10 +917,8 @@
         }
 
         async function loadPricing() {
-            // Mocking the call, waiting for backend
             allPricing = await fetch('/api/pricing').then(r => r.json()).catch(() => []);
             
-            // Default placeholder tiers if the database is empty or offline
             if(!allPricing.length) {
                 allPricing = [
                     { id: '1', tier: 'Tier 01', title: 'Starter', price: 500, currency: 'RBX', perks: '05 High-Res Banners, Custom Footer', isElite: false, link: 'https://discord.gg/druKVJHJZz' },
@@ -927,7 +928,6 @@
             }
 
             document.getElementById('pricing-grid').innerHTML = allPricing.map(p => {
-                // Ensure perks is converted to an array based on commas
                 const perksArray = (p.perks || '').split(',').map(item => item.trim()).filter(item => item);
                 const perksHtml = perksArray.map(perk => `<li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500"></i> ${perk}</li>`).join('');
 
@@ -1041,14 +1041,11 @@
             btn.innerText = "TRANSMITTING..."; btn.disabled = true; btn.classList.add('opacity-50');
 
             try {
-                // Determine if we're sending FormData (files) or JSON (for Pricing)
                 let fetchOptions = { method: 'POST' };
                 
                 if (type === 'pricing') {
-                    // For pricing we can just send JSON since there are no image files
                     const formData = new FormData(form);
                     const data = Object.fromEntries(formData.entries());
-                    // Convert checkbox value to boolean
                     data.isElite = formData.has('isElite');
                     fetchOptions.headers = { 'Content-Type': 'application/json' };
                     fetchOptions.body = JSON.stringify(data);
