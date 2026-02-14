@@ -63,11 +63,6 @@ const Music = mongoose.model('Music', new mongoose.Schema({
     order: { type: Number, default: 0 } 
 }));
 
-const Setting = mongoose.model('Setting', new mongoose.Schema({ 
-    key: String, 
-    value: String 
-}));
-
 const ViewCounter = mongoose.model('ViewCounter', new mongoose.Schema({ 
     count: { type: Number, default: 1400 } 
 }));
@@ -175,18 +170,33 @@ app.post('/api/auth/logout', (req, res) => { req.session = null; res.json({ succ
 // --- API ROUTES ---
 
 // 1. SETTINGS (Global PFP)
-app.get('/api/settings', async (req, res) => {
-    const pfp = await Setting.findOne({ key: 'pfp' });
-    res.json({ pfp: pfp ? pfp.value : '/assets/pfp.jpg' });
+app.get('/api/settings', (req, res) => {
+    // Generate the static Cloudinary URL using your environment variable
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    // Append a timestamp so the browser doesn't load a cached older version
+    const timestamp = new Date().getTime(); 
+    res.json({ pfp: `https://res.cloudinary.com/${cloudName}/image/upload/v1/axel_portfolio/main_pfp.jpg?t=${timestamp}` });
 });
 
 app.post('/api/settings/pfp', requireAdmin, upload.single('pfp'), async (req, res) => {
     if(!req.file) return res.status(400).send('No file');
     try {
-        const url = await uploadToCloudinary(req.file.path, 'settings', 'image');
-        await Setting.findOneAndUpdate({ key: 'pfp' }, { value: url }, { upsert: true });
-        res.json({ pfp: url });
-    } catch(e) { res.status(500).send(e.toString()); }
+        // Upload to Cloudinary with a fixed public_id and force overwrite
+        const result = await cloudinary.uploader.upload(req.file.path, {
+            public_id: 'axel_portfolio/main_pfp',
+            overwrite: true,
+            invalidate: true, // Tells Cloudinary to clear its CDN cache
+            resource_type: 'image'
+        });
+        
+        // Clean up the local temp file
+        if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+        
+        res.json({ pfp: result.secure_url });
+    } catch(e) { 
+        if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+        res.status(500).send(e.toString()); 
+    }
 });
 
 // 2. PROJECTS
