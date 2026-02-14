@@ -157,6 +157,18 @@ app.get('/auth/discord/callback', async (req, res) => {
     }
 });
 
+app.post('/api/auth/devkey', express.json(), (req, res) => {
+    const { key } = req.body;
+    if (key && key === process.env.DEV_KEY) {
+        req.session.user = { id: 'dev_admin', isAdmin: true };
+        return res.json({ success: true });
+    }
+    res.status(401).json({ error: 'Invalid Dev Key' });
+});
+
+app.get('/api/me', (req, res) => res.json(req.session.user || { isAdmin: false }));
+app.post('/api/auth/logout', (req, res) => { req.session = null; res.json({ success: true }); });
+
 app.get('/api/me', (req, res) => res.json(req.session.user || { isAdmin: false }));
 app.post('/api/auth/logout', (req, res) => { req.session = null; res.json({ success: true }); });
 
