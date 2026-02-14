@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AXEL | Digital Architect</title>
+    <meta name="title" content="AXEL | Digital Architect">
+    <meta name="description" content="Visualizing the future through high-fidelity graphics and seamless web experiences. Based in the digital ether.">
+    <meta name="theme-color" content="#3b82f6"> <meta property="og:type" content="website">
+    <meta property="og:url" content="https://axel.up.railway.app/"> <meta property="og:title" content="AXEL | Digital Architect">
+    <meta property="og:description" content="Visualizing the future through high-fidelity graphics and seamless web experiences. Based in the digital ether.">
+    <meta property="og:image" content="https://i.imgur.com/vpKma9A.png"> <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://axel.up.railway.app/">
+    <meta property="twitter:title" content="AXEL | Digital Architect">
+    <meta property="twitter:description" content="Visualizing the future through high-fidelity graphics and seamless web experiences. Based in the digital ether.">
+    <meta property="twitter:image" content="https://i.imgur.com/vpKma9A.png"> ```
+    
     <link id="favicon" rel="icon" href="/favicon.ico?v=4">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -95,6 +106,21 @@
             --glass-border: rgba(168, 85, 247, 0.2);
         }
 
+        html[data-theme="fire"], body[data-theme="fire"] {
+            --bg-main: #140505;
+            --bg-card: #240808;
+            --brand-50: #fff1f2; --brand-100: #ffe4e6;
+            --brand-400: #fb7185; --brand-500: #f43f5e; --brand-600: #e11d48;
+            --accent: #f97316;
+            --cursor-color: #f97316;
+            --text-main: #fecdd3;
+            --text-muted: #fda4af;
+            --gradient-rez: linear-gradient(to right, #f43f5e, #f97316, #fbbf24);
+            --view-count-color: #f97316;
+            --glass-bg: rgba(36, 8, 8, 0.7);
+            --glass-border: rgba(244, 63, 94, 0.2);
+        }
+
         /* --- UTILS --- */
         * { cursor: none !important; -webkit-user-select: none; user-select: none; }
         input, textarea, [contenteditable] { -webkit-user-select: text; user-select: text; }
@@ -160,13 +186,46 @@
         .scanline-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.1) 51%); background-size: 100% 4px; z-index: 99; pointer-events: none; }
         .bg-mesh { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(at 0% 0%, var(--brand-500) 0, transparent 50%), radial-gradient(at 100% 100%, var(--accent) 0, transparent 50%); opacity: 0.15; z-index: -1; }
         
-        .cursor-dot { width: 8px; height: 8px; background: var(--cursor-color); position: fixed; top: 0; left: 0; border-radius: 50%; z-index: 999999; pointer-events: none; transform: translate(-50%, -50%); transition: width 0.2s, height 0.2s, background 0.2s, border-radius 0.2s; box-shadow: 0 0 10px var(--cursor-color); }
-        .cursor-trail { width: 40px; height: 40px; border: 1px solid var(--cursor-color); position: fixed; top: 0; left: 0; border-radius: 50%; z-index: 999998; pointer-events: none; transform: translate(-50%, -50%); transition: transform 0.1s ease-out, background 0.2s; opacity: 0.5; }
-        body.hovering .cursor-dot { width: 12px; height: 12px; background: var(--accent); box-shadow: 0 0 15px var(--accent); }
-        body.hovering .cursor-trail { background: rgba(255, 255, 255, 0.1); border-color: var(--accent); transform: translate(-50%, -50%) scale(1.5); }
+       .cursor-dot { 
+            width: 8px; height: 8px; background: var(--cursor-color); 
+            position: fixed; top: 0; left: 0; border-radius: 50%; 
+            z-index: 999999; pointer-events: none; 
+            will-change: transform; 
+            /* No CSS transition here to prevent lag */
+        }
+        .cursor-trail { 
+            width: 44px; height: 44px; border: 2px solid var(--cursor-color); 
+            position: fixed; top: 0; left: 0; border-radius: 50%; 
+            z-index: 999998; pointer-events: none; 
+            transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), height 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s, border-color 0.3s, transform 0.1s; 
+            will-change: transform;
+        }
         
-        body.is-dragging .cursor-dot, 
-        body.is-dragging .cursor-trail { opacity: 0; }
+        /* Smooth magnetic hover states */
+        body.hovering .cursor-dot { opacity: 0; }
+        body.hovering .cursor-trail { 
+            width: 65px; height: 65px; 
+            background: rgba(255, 255, 255, 0.1); 
+            border-color: var(--accent); 
+            backdrop-filter: blur(4px); 
+        }
+
+        /* Custom text editing cursor */
+        body.text-hovering .cursor-dot {
+    width: 2px !important;
+    height: 24px !important;
+    border-radius: 0 !important;
+    background: var(--brand-500) !important;
+    opacity: 1 !important;
+    animation: textBlink 1s infinite;
+}
+        body.text-hovering .cursor-trail {
+            opacity: 0 !important;
+        }
+        @keyframes textBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
 
         .rez-gradient { background-image: var(--gradient-rez); -webkit-background-clip: text; background-clip: text; color: transparent; }
         
@@ -181,6 +240,14 @@
         
         #confirmModal.hidden { opacity: 0; pointer-events: none; transform: scale(0.95); }
         #confirmModal:not(.hidden) { opacity: 1; pointer-events: auto; transform: scale(1); }
+        
+    img {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-select: none;
+}
     </style>
 </head>
 <body class="antialiased selection:bg-brand-500 selection:text-white" data-theme="">
@@ -189,6 +256,15 @@
     <div class="cursor-trail" id="cursor-trail"></div>
     <div class="bg-mesh"></div>
     <div class="scanline-overlay animate-scanline"></div>
+
+    <div id="lightboxModal" class="fixed inset-0 z-[99999] bg-black/95 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500 backdrop-blur-md" onclick="closeModal(event)">
+        <div class="relative max-w-7xl max-h-[90vh] w-full p-4 flex justify-center items-center">
+            <img id="lightboxImg" class="max-w-full max-h-[85vh] object-contain rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.5)] scale-95 transition-transform duration-500">
+            <button onclick="closeModal(event, true)" class="absolute -top-10 right-4 md:-right-10 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center border border-white/20 transition-all interactable shadow-lg">
+                <i class="fa-solid fa-xmark text-xl pointer-events-none"></i>
+            </button>
+        </div>
+    </div>
 
     <div id="confirmModal" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm transition-all duration-300 hidden">
         <div class="bg-[var(--bg-card)] border border-[var(--brand-500)] p-8 rounded-2xl max-w-sm w-full mx-6 shadow-[0_0_50px_rgba(59,130,246,0.2)] text-center relative overflow-hidden">
@@ -363,7 +439,7 @@
                 </div>
 
                 <div class="w-full flex-shrink-0 h-full overflow-y-auto p-10 space-y-6">
-                    <form onsubmit="handleUpload(event, '/api/pricing', 'pricing')" class="space-y-6">
+                    <form onsubmit="handleUpload(event, '/api/pricing', 'pricing')" oninput="updatePricingPreview()" class="space-y-6">
                         <p class="text-[10px] font-mono uppercase text-brand-500">Service Tier Config</p>
                         
                         <div class="grid grid-cols-2 gap-4">
@@ -387,8 +463,14 @@
 
                         <button type="submit" class="interactable w-full py-4 bg-[var(--text-main)] text-[var(--bg-main)] font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-brand-500 hover:text-white transition-all">Deploy Tier</button>
                     </form>
+
+                    <div class="pt-6 border-t border-white/10 mt-6 hidden" id="pricing-preview-wrapper">
+                        <p class="text-[10px] font-mono uppercase text-gray-500 mb-4">Live Preview</p>
+                        <div id="pricing-preview-render" class="w-full transform scale-90 origin-top"></div>
+                    </div>
+
                     <div class="pt-8 border-t border-white/10">
-                         <p class="text-[10px] font-mono uppercase text-gray-500 mb-4">Quick Deletion</p>
+                         <p class="text-[10px] font-mono uppercase text-gray-500 mb-4">Configuration Elements</p>
                          <div id="admin-pricing-list" class="space-y-2"></div>
                     </div>
                 </div>
@@ -415,7 +497,7 @@
         </div>
     </div>
 
-    <section id="home" class="relative pt-32 pb-20 px-6 min-h-screen flex flex-col justify-center">
+    <section id="home" class="relative pt-32 pb-20 px-6 min-h-screen max-h-[1080px] flex flex-col justify-center">
         <div class="max-w-7xl mx-auto w-full grid lg:grid-cols-12 gap-12 items-center">
             <div class="lg:col-span-7" data-aos="fade-right">
                 <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8">
@@ -518,7 +600,7 @@
                 <h2 class="text-4xl font-bold mb-6">Service Protocols</h2>
                 <p class="text-[var(--text-muted)]">Select an acquisition tier to initiate development.</p>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center" id="pricing-grid"></div>
+            <div class="grid-stack relative" id="pricing-grid"></div>
         </div>
     </section>
 
@@ -527,8 +609,9 @@
             <div class="flex-1 flex justify-start">
                 <p class="text-gray-600 font-mono text-[10px] uppercase tracking-widest">&copy; 2026 AXEL ARCHIVES // ALL RIGHTS RESERVED</p>
             </div>
-            <div class="flex-1 flex justify-center gap-8 text-gray-500 text-sm">
+            <div class="flex-1 flex flex-col items-center justify-center gap-4 text-gray-500 text-sm">
                 <a href="https://discord.gg/druKVJHJZz" target="_blank" class="interactable hover:text-white transition-colors"><i class="fa-brands fa-discord text-2xl"></i></a>
+                <span class="text-[10px] font-mono tracking-widest uppercase text-center">Created, designed, and scripted by @realistic_axel</span>
             </div>
             <div class="flex-1 flex justify-end items-center gap-2 font-mono text-[10px] text-gray-600">
                 <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
@@ -549,22 +632,70 @@
         // --- DYNAMIC CURSOR ---
         const cursorDot = document.getElementById('cursor-dot');
         const cursorTrail = document.getElementById('cursor-trail');
+        
+        let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+        let dotX = mouseX, dotY = mouseY;
+        let trailX = mouseX, trailY = mouseY;
+
         window.addEventListener('mousemove', (e) => {
-            const posX = e.clientX;
-            const posY = e.clientY;
-            cursorDot.style.left = `${posX}px`; cursorDot.style.top = `${posY}px`;
-            cursorTrail.animate({ left: `${posX}px`, top: `${posY}px` }, { duration: 500, fill: "forwards" });
+            mouseX = e.clientX;
+            mouseY = e.clientY;
         });
+
+        document.body.addEventListener('mousedown', () => {
+            if(!document.body.classList.contains('text-hovering')) {
+                cursorDot.style.transform = `translate(${dotX}px, ${dotY}px) translate(-50%, -50%) scale(0.5)`;
+                cursorTrail.style.transform = `translate(${trailX}px, ${trailY}px) translate(-50%, -50%) scale(0.8)`;
+            }
+        });
+
+        // Handle custom cursors for inputs, textareas, and interactables
         document.body.addEventListener('mouseover', (e) => {
-            if (e.target.closest('.interactable') || e.target.tagName === 'BUTTON' || e.target.tagName === 'A') {
+            if (e.target.closest('input') || e.target.closest('textarea') || e.target.closest('[contenteditable]')) {
+                document.body.classList.add('text-hovering');
+            } else if (e.target.closest('.interactable') || e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.closest('.grid-stack-item-content')) {
                 document.body.classList.add('hovering');
             }
         });
         document.body.addEventListener('mouseout', (e) => {
-            if (e.target.closest('.interactable') || e.target.tagName === 'BUTTON' || e.target.tagName === 'A') {
+            if (e.target.closest('input') || e.target.closest('textarea') || e.target.closest('[contenteditable]')) {
+                document.body.classList.remove('text-hovering');
+            } else if (e.target.closest('.interactable') || e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || e.target.closest('.grid-stack-item-content')) {
                 document.body.classList.remove('hovering');
             }
         });
+
+       function animateCursor() {
+    dotX = mouseX;
+    dotY = mouseY;
+    
+    trailX += (mouseX - trailX) * 0.15;
+    trailY += (mouseY - trailY) * 0.15;
+
+    const dx = mouseX - trailX;
+    const dy = mouseY - trailY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    const stretch = Math.min(1 + distance * 0.004, 1.8);
+    const squish = Math.max(1 - distance * 0.002, 0.7);
+    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+    // Coordinate tracking is now independent of the ':active' state
+    if(!document.body.classList.contains('text-hovering')) {
+        cursorDot.style.transform = `translate(${dotX}px, ${dotY}px) translate(-50%, -50%)`;
+    } else {
+        cursorDot.style.transform = `translate(${dotX}px, ${dotY}px) translate(-50%, -50%) scale(1)`;
+    }
+
+    if (document.body.classList.contains('hovering') || document.body.classList.contains('text-hovering')) {
+        cursorTrail.style.transform = `translate(${trailX}px, ${trailY}px) translate(-50%, -50%) scale(1)`;
+    } else {
+        cursorTrail.style.transform = `translate(${trailX}px, ${trailY}px) translate(-50%, -50%) rotate(${angle}deg) scaleX(${stretch}) scaleY(${squish})`;
+    }
+
+    requestAnimationFrame(animateCursor);
+}
+        animateCursor();
 
         // --- TYPEWRITER EFFECT ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -629,9 +760,9 @@
         // --- APP STATE ---
         let playlist = [], currentTrackIndex = 0, isPlaying = false, isLooping = false;
         let allProjects = [], allReviews = [], allMusic = [], allPricing = [];
-        let projectGrid, reviewGrid;
+        let projectGrid, reviewGrid, pricingGrid; 
         const audio = document.getElementById('audio');
-        const themes = [null, 'snow', 'toxic']; 
+        const themes = [null, 'snow', 'toxic', 'fire']; 
         let currentThemeIndex = 0;
 
         const savedThemeStr = localStorage.getItem('axel_theme');
@@ -663,6 +794,9 @@
             } else if (theme === 'toxic') {
                 favicon.href = "/favicon.ico?v=3";
                 icon.className = "fa-solid fa-biohazard text-[var(--brand-500)]";
+            } else if (theme === 'fire') {
+                favicon.href = "/favicon.ico?v=3";
+                icon.className = "fa-solid fa-fire text-[var(--brand-500)]";
             } else {
                 favicon.href = "/favicon.ico?v=3";
                 icon.className = "fa-solid fa-moon text-[var(--brand-500)]";
@@ -676,7 +810,6 @@
             initData();
             initSlider();
     
-            // Fake Boot Loading
             let p = 0; 
             const bar = document.getElementById('bootProgress');
             const text = document.getElementById('bootText');
@@ -733,6 +866,7 @@
                      const theme = themes[currentThemeIndex];
                      if (theme === 'snow') icon.className = "fa-solid fa-snowflake text-[var(--brand-500)]";
                      else if (theme === 'toxic') icon.className = "fa-solid fa-biohazard text-[var(--brand-500)]";
+                     else if (theme === 'fire') icon.className = "fa-solid fa-fire text-[var(--brand-500)]";
                      else icon.className = "fa-solid fa-moon text-[var(--brand-500)]";
                 }
             } else {
@@ -801,22 +935,19 @@
                 
                 if(projectGrid) projectGrid.setStatic(false);
                 if(reviewGrid) reviewGrid.setStatic(false);
-                
-                document.body.addEventListener('mousedown', () => document.body.classList.add('is-dragging'));
-                document.body.addEventListener('mouseup', () => document.body.classList.remove('is-dragging'));
+                if(pricingGrid) pricingGrid.setStatic(false); 
             } else {
                 btn.innerText = "SAVING...";
                 
-                if(projectGrid) {
-                    projectGrid.setStatic(true);
-                    localStorage.setItem('axel_projects_layout', JSON.stringify(projectGrid.save()));
-                }
-                if(reviewGrid) {
-                    reviewGrid.setStatic(true);
-                    localStorage.setItem('axel_reviews_layout', JSON.stringify(reviewGrid.save()));
-                }
+                if(projectGrid) projectGrid.setStatic(true);
+                if(reviewGrid) reviewGrid.setStatic(true);
+                if(pricingGrid) pricingGrid.setStatic(true); 
 
-                await Promise.all([saveOrder('projects'), saveOrder('reviews')]);
+                await Promise.all([
+                    saveOrder('projects'), 
+                    saveOrder('reviews'), 
+                    saveOrder('pricing')
+                ]);
 
                 btn.classList.remove('bg-brand-500', 'text-white');
                 btn.innerText = "EDIT LAYOUT";
@@ -827,17 +958,44 @@
         }
 
         async function saveOrder(type) {
-            const grid = type === 'projects' ? projectGrid : reviewGrid;
-            if(!grid) return;
-            const ids = grid.save().map(item => item.id).filter(id => id);
-            
-            try {
-                await fetch(`/api/${type}/reorder`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(ids)
-                });
-            } catch(e) { console.error("Save order failed", e); }
+    const grid = type === 'projects' ? projectGrid : type === 'reviews' ? reviewGrid : pricingGrid;
+    if(!grid) return;
+    
+    // Pull from engine.nodes to reliably capture 'w' and 'h'
+    const layoutData = grid.engine.nodes.map(node => ({
+        id: node.id,
+        x: node.x,
+        y: node.y,
+        w: node.w,
+        h: node.h
+    })).filter(item => item.id);
+    
+    try {
+        await fetch(`/api/${type}/reorder`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(layoutData)
+        });
+    } catch(e) { console.error("Save order failed", e); }
+}
+
+        // --- FULLSCREEN MODAL ---
+        function openModal(imgSrc) {
+            if(isEditMode) return;
+            const modal = document.getElementById('lightboxModal');
+            const img = document.getElementById('lightboxImg');
+            img.src = imgSrc;
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => img.classList.replace('scale-95', 'scale-100'), 50);
+        }
+
+        function closeModal(e, force = false) {
+            if(force || e.target.id === 'lightboxModal') {
+                const modal = document.getElementById('lightboxModal');
+                const img = document.getElementById('lightboxImg');
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                img.classList.replace('scale-100', 'scale-95');
+            }
         }
 
         // --- CONTENT LOADERS ---
@@ -845,16 +1003,12 @@
             allProjects = await fetch('/api/projects').then(r => r.json()).catch(() => []);
             if(!allProjects.length) allProjects = [{id: '1', title: 'Neo-Tokyo', image: 'https://images.unsplash.com/photo-1558655146-d09347e0b7a8?q=80'}];
             
-            let savedLayout = JSON.parse(localStorage.getItem('axel_projects_layout')) || [];
-            let layoutMap = {};
-            savedLayout.forEach(item => layoutMap[item.id] = item);
-
             if(projectGrid) projectGrid.destroy(false); 
 
-            // FIX: Removed `data-aos="fade-up"` inside the GridStack content to fix invisible images
             document.getElementById('past-work-grid').innerHTML = allProjects.map((p, i) => {
-                let layout = layoutMap[p.id] || { w: 4, h: 4 }; 
-                let posAttrs = (layout.x !== undefined && layout.y !== undefined) ? `gs-x="${layout.x}" gs-y="${layout.y}"` : '';
+                let layout = p.layout || { w: 4, h: 4 };
+                // Using GridStack native auto-position if coordinates aren't saved yet
+                let posAttrs = (layout.x !== undefined && layout.y !== undefined) ? `gs-x="${layout.x}" gs-y="${layout.y}"` : ``;
                 
                 return `
                 <div class="grid-stack-item" gs-id="${p.id}" gs-w="${layout.w}" gs-h="${layout.h}" ${posAttrs}>
@@ -878,17 +1032,12 @@
             allReviews = await fetch('/api/reviews').then(r => r.json()).catch(() => []);
             const display = allReviews.length ? allReviews : [{id:'0', name: 'VOID', feedback: 'System initialization complete. Excellent rendering capabilities.', stars: 5, date: '01.01.26', avatar: 'https://cdn.discordapp.com/embed/avatars/0.png'}];
             document.getElementById('review-count-badge').innerText = display.length.toString().padStart(2, '0');
-            
-            let savedLayout = JSON.parse(localStorage.getItem('axel_reviews_layout')) || [];
-            let layoutMap = {};
-            savedLayout.forEach(item => layoutMap[item.id] = item);
 
             if(reviewGrid) reviewGrid.destroy(false);
 
-            // FIX: Removed `data-aos="fade-up"` to fix invisible reviews
             document.getElementById('reviews-grid').innerHTML = display.map((r, i) => {
-                let layout = layoutMap[r.id] || { w: 4, h: 3 };
-                let posAttrs = (layout.x !== undefined && layout.y !== undefined) ? `gs-x="${layout.x}" gs-y="${layout.y}"` : '';
+                let layout = r.layout || { w: 4, h: 3 };
+                let posAttrs = (layout.x !== undefined && layout.y !== undefined) ? `gs-x="${layout.x}" gs-y="${layout.y}"` : ``;
                 
                 return `
                 <div class="grid-stack-item" gs-id="${r.id}" gs-w="${layout.w}" gs-h="${layout.h}" ${posAttrs}>
@@ -927,14 +1076,20 @@
                 ];
             }
 
-            document.getElementById('pricing-grid').innerHTML = allPricing.map(p => {
+            if(pricingGrid) pricingGrid.destroy(false);
+            
+            document.getElementById('pricing-grid').innerHTML = allPricing.map((p, i) => {
                 const perksArray = (p.perks || '').split(',').map(item => item.trim()).filter(item => item);
                 const perksHtml = perksArray.map(perk => `<li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500"></i> ${perk}</li>`).join('');
 
+                let layout = p.layout || { w: 4, h: 7 };
+                let posAttrs = (layout.x !== undefined && layout.y !== undefined) ? `gs-x="${layout.x}" gs-y="${layout.y}"` : ``;
+
+                let innerContent = '';
                 if(p.isElite) {
-                    return `
-                    <div class="relative p-1 rounded-[2.5rem] bg-gradient-to-b from-brand-500 to-accent group hover:scale-[1.02] transition-all duration-500">
-                        <div class="bg-white h-full w-full rounded-[2.4rem] p-10 flex flex-col relative overflow-hidden">
+                    innerContent = `
+                    <div class="relative p-1 rounded-[2.5rem] bg-gradient-to-b from-brand-500 to-accent group hover:scale-[1.02] transition-all duration-500 h-full w-full flex flex-col">
+                        <div class="bg-white flex-1 w-full rounded-[2.4rem] p-10 flex flex-col relative overflow-hidden">
                             <div class="absolute top-0 right-0 p-6"><i class="fa-solid fa-bolt text-brand-500 animate-pulse"></i></div>
                             <span class="text-[10px] font-mono text-brand-500 uppercase tracking-[0.3em] mb-4">${p.tier}</span>
                             <h3 class="text-2xl font-bold mb-6 text-black">${p.title}</h3>
@@ -945,12 +1100,12 @@
                             <ul class="space-y-4 mb-12 flex-1 text-sm text-gray-900 font-semibold">
                                 ${perksHtml}
                             </ul>
-                            <a href="${p.link || '#'}" target="_blank" class="interactable w-full py-4 rounded-2xl bg-black text-white text-center font-bold uppercase tracking-widest text-[10px] transition-all shadow-xl hover:bg-gray-800">Initialize Tier</a>
+                            <a href="${p.link || '#'}" target="_blank" class="interactable w-full py-4 rounded-2xl bg-black text-white text-center font-bold uppercase tracking-widest text-[10px] transition-all shadow-xl hover:bg-gray-800 mt-auto">Initialize Tier</a>
                         </div>
                     </div>`;
                 } else {
-                    return `
-                    <div class="glass p-10 rounded-[2.5rem] flex flex-col group hover:border-brand-500/50 transition-all duration-500">
+                    innerContent = `
+                    <div class="glass p-10 rounded-[2.5rem] flex flex-col group hover:border-brand-500/50 transition-all duration-500 h-full w-full">
                         <span class="text-[10px] font-mono text-gray-500 uppercase tracking-[0.3em] mb-4">${p.tier}</span>
                         <h3 class="text-2xl font-bold mb-6">${p.title}</h3>
                         <div class="flex items-baseline gap-2 mb-10">
@@ -960,19 +1115,32 @@
                         <ul class="space-y-4 mb-12 flex-1 text-sm text-[var(--text-muted)]">
                             ${perksHtml}
                         </ul>
-                        <a href="${p.link || '#'}" target="_blank" class="interactable w-full py-4 rounded-2xl bg-white/5 hover:bg-white hover:text-black text-[var(--text-main)] text-center font-bold uppercase tracking-widest text-[10px] transition-all">Acquire</a>
+                        <a href="${p.link || '#'}" target="_blank" class="interactable w-full py-4 rounded-2xl bg-white/5 hover:bg-white hover:text-black text-[var(--text-main)] text-center font-bold uppercase tracking-widest text-[10px] transition-all mt-auto">Acquire</a>
                     </div>`;
                 }
+
+                return `
+                <div class="grid-stack-item" gs-id="${p.id}" gs-w="${layout.w}" gs-h="${layout.h}" ${posAttrs}>
+                    <div class="grid-stack-item-content interactable-parent" style="background: transparent; border: none; overflow: visible !important;">
+                        ${innerContent}
+                    </div>
+                </div>`;
             }).join('');
             
+            pricingGrid = GridStack.init({ staticGrid: true, cellHeight: 80, margin: 20, animate: true }, '#pricing-grid');
             renderAdminLists();
         }
 
         // --- ADMIN FUNCTIONS ---
         function toggleAdmin() {
-            document.getElementById('adminDrawer').classList.toggle('translate-x-full');
+            const drawer = document.getElementById('adminDrawer');
+            drawer.classList.toggle('translate-x-full');
+            
             const overlay = document.getElementById('adminOverlay');
-            overlay.classList.toggle('opacity-0'); overlay.classList.toggle('pointer-events-auto');
+            overlay.classList.toggle('opacity-0'); 
+            overlay.classList.toggle('pointer-events-auto');
+
+            document.body.classList.toggle('overflow-hidden');
         }
 
         function switchTab(idx) {
@@ -988,13 +1156,14 @@
         }
 
         function renderAdminLists() {
-            const createList = (data, type, contentFn) => {
+            const createList = (data, type, contentFn, hasEdit = false) => {
                 const el = document.getElementById(`admin-${type}-list`);
                 if(el) {
                     el.innerHTML = data.map(item => `
                         <div class="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
                             ${contentFn(item)}
-                            <button onclick="deleteItem('${type}', '${item.id}')" class="interactable text-red-500 hover:text-red-400 px-2 ml-auto"><i class="fa-solid fa-trash"></i></button>
+                            ${hasEdit ? `<button type="button" onclick="editPricing('${item.id}')" class="interactable text-brand-500 hover:text-brand-400 px-2 ml-auto"><i class="fa-solid fa-pen"></i></button>` : ''}
+                            <button type="button" onclick="deleteItem('${type}', '${item.id}')" class="interactable text-red-500 hover:text-red-400 px-2 ${hasEdit ? '' : 'ml-auto'}"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     `).join('');
                 }
@@ -1002,7 +1171,91 @@
             createList(allProjects, 'projects', p => `<img src="${p.image}" class="w-8 h-8 rounded object-cover"><span class="text-[10px] font-mono flex-1 truncate text-gray-300">${p.title}</span>`);
             createList(allMusic, 'music', m => `<img src="${m.cover}" class="w-8 h-8 rounded object-cover"><div class="flex-1 truncate"><p class="text-[10px] font-mono text-gray-300">${m.title}</p></div>`);
             createList(allReviews, 'reviews', r => `<span class="text-[10px] font-mono flex-1 truncate text-gray-300">${r.name}</span>`);
-            createList(allPricing, 'pricing', p => `<span class="text-[10px] font-mono flex-1 truncate text-gray-300">${p.title} - ${p.price} ${p.currency}</span>`);
+            createList(allPricing, 'pricing', p => `<span class="text-[10px] font-mono flex-1 truncate text-gray-300">${p.title} - ${p.price} ${p.currency}</span>`, true);
+        }
+
+        // --- PRICING EDITING & LIVE PREVIEW ---
+        function editPricing(id) {
+            const p = allPricing.find(x => x.id === id);
+            if(!p) return;
+            const form = document.querySelector('form[onsubmit*="pricing"]');
+            
+            form.querySelector('[name="tier"]').value = p.tier || '';
+            form.querySelector('[name="title"]').value = p.title || '';
+            form.querySelector('[name="price"]').value = p.price || '';
+            form.querySelector('[name="currency"]').value = p.currency || '';
+            form.querySelector('[name="perks"]').value = p.perks || '';
+            form.querySelector('[name="link"]').value = p.link || '';
+            form.querySelector('#isEliteToggle').checked = !!p.isElite;
+
+            let idField = form.querySelector('input[name="edit_id"]');
+            if(!idField) {
+                idField = document.createElement('input');
+                idField.type = 'hidden';
+                idField.name = 'edit_id';
+                form.appendChild(idField);
+            }
+            idField.value = p.id;
+
+            form.querySelector('button[type="submit"]').innerText = "Update Tier";
+            updatePricingPreview();
+            form.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+        }
+
+        function updatePricingPreview() {
+            const form = document.querySelector('form[onsubmit*="pricing"]');
+            const data = {
+                tier: form.querySelector('[name="tier"]').value || 'TIER_ID',
+                title: form.querySelector('[name="title"]').value || 'Title',
+                price: form.querySelector('[name="price"]').value || '0',
+                currency: form.querySelector('[name="currency"]').value || 'CUR',
+                perks: form.querySelector('[name="perks"]').value || 'Your Perks, Appear Here',
+                isElite: form.querySelector('#isEliteToggle').checked
+            };
+
+            const wrapper = document.getElementById('pricing-preview-wrapper');
+            const render = document.getElementById('pricing-preview-render');
+
+            if(!form.querySelector('[name="tier"]').value && !form.querySelector('[name="title"]').value) {
+                wrapper.classList.add('hidden');
+                return;
+            }
+            wrapper.classList.remove('hidden');
+
+            const perksArray = data.perks.split(',').map(item => item.trim()).filter(item => item);
+            const perksHtml = perksArray.map(perk => `<li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500"></i> ${perk}</li>`).join('');
+
+            let innerContent = '';
+            if(data.isElite) {
+                innerContent = `
+                <div class="relative p-1 rounded-[2.5rem] bg-gradient-to-b from-brand-500 to-accent group flex flex-col w-full">
+                    <div class="bg-white flex-1 w-full rounded-[2.4rem] p-10 flex flex-col relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-6"><i class="fa-solid fa-bolt text-brand-500 animate-pulse"></i></div>
+                        <span class="text-[10px] font-mono text-brand-500 uppercase tracking-[0.3em] mb-4">${data.tier}</span>
+                        <h3 class="text-2xl font-bold mb-6 text-black">${data.title}</h3>
+                        <div class="flex items-baseline gap-2 mb-10">
+                            <span class="text-5xl font-black text-black">${data.price}</span>
+                            <span class="text-gray-900 font-mono text-sm ml-2">${data.currency}</span>
+                        </div>
+                        <ul class="space-y-4 mb-12 flex-1 text-sm text-gray-900 font-semibold">${perksHtml}</ul>
+                        <div class="w-full py-4 rounded-2xl bg-black text-white text-center font-bold uppercase tracking-widest text-[10px] shadow-xl mt-auto">Initialize Tier</div>
+                    </div>
+                </div>`;
+            } else {
+                innerContent = `
+                <div class="glass p-10 rounded-[2.5rem] flex flex-col w-full">
+                    <span class="text-[10px] font-mono text-gray-500 uppercase tracking-[0.3em] mb-4">${data.tier}</span>
+                    <h3 class="text-2xl font-bold mb-6">${data.title}</h3>
+                    <div class="flex items-baseline gap-2 mb-10">
+                        <span class="text-5xl font-black">${data.price}</span>
+                        <span class="text-gray-500 font-mono text-sm ml-2">${data.currency}</span>
+                    </div>
+                    <ul class="space-y-4 mb-12 flex-1 text-sm text-[var(--text-muted)]">${perksHtml}</ul>
+                    <div class="w-full py-4 rounded-2xl bg-white/5 text-[var(--text-main)] text-center font-bold uppercase tracking-widest text-[10px] mt-auto">Acquire</div>
+                </div>`;
+            }
+
+            render.innerHTML = innerContent;
         }
 
         async function deleteItem(type, id) {
@@ -1047,6 +1300,14 @@
                     const formData = new FormData(form);
                     const data = Object.fromEntries(formData.entries());
                     data.isElite = formData.has('isElite');
+                    
+                    if (data.edit_id) {
+                        // FIX FOR 404 Cannot PUT error. 
+                        // Simulate an edit by Deleting the old one and Creating a new one.
+                        await fetch(`/api/pricing/${data.edit_id}`, { method: 'DELETE' });
+                        delete data.edit_id;
+                    }
+                    
                     fetchOptions.headers = { 'Content-Type': 'application/json' };
                     fetchOptions.body = JSON.stringify(data);
                 } else {
@@ -1064,9 +1325,15 @@
                     else if(type === 'pfp') { location.reload(); return; }
 
                     form.reset();
+                    if(type === 'pricing') {
+                        let idField = form.querySelector('input[name="edit_id"]');
+                        if(idField) idField.remove();
+                        btn.innerText = "Deploy Tier";
+                        document.getElementById('pricing-preview-wrapper').classList.add('hidden');
+                    }
                     form.querySelectorAll('img').forEach(img => img.style.opacity = 0);
                     setTimeout(() => { 
-                         btn.innerText = originalText; 
+                         btn.innerText = type === 'pricing' ? 'Deploy Tier' : originalText; 
                          btn.classList.replace('bg-green-500','bg-[var(--text-main)]'); 
                          btn.classList.remove('opacity-50'); 
                          btn.disabled = false;
