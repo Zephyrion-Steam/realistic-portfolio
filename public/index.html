@@ -6,14 +6,14 @@
     <title>AXEL | Digital Architect</title>
     <meta name="title" content="AXEL | Digital Architect">
     <meta name="description" content="Visualizing the future through high-fidelity graphics and seamless web experiences. Based in the digital ether.">
-    <meta name="theme-color" content="#3b82f6"> <meta property="og:type" content="website">
+    <meta name="theme-color" content="#f43f5e"> <meta property="og:type" content="website">
     <meta property="og:url" content="https://axel.up.railway.app/"> <meta property="og:title" content="AXEL | Digital Architect">
     <meta property="og:description" content="Visualizing the future through high-fidelity graphics and seamless web experiences. Based in the digital ether.">
     <meta property="og:image" content="https://i.imgur.com/vpKma9A.png"> <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://axel.up.railway.app/">
     <meta property="twitter:title" content="AXEL | Digital Architect">
     <meta property="twitter:description" content="Visualizing the future through high-fidelity graphics and seamless web experiences. Based in the digital ether.">
-    <meta property="twitter:image" content="https://i.imgur.com/vpKma9A.png"> ```
+    <meta property="twitter:image" content="https://i.imgur.com/vpKma9A.png">
     
     <link id="favicon" rel="icon" href="/favicon.ico?v=4">
     
@@ -62,6 +62,22 @@
     <style>
         /* --- THEME ENGINE --- */
         :root {
+            /* Default: Fire Theme */
+            --bg-main: #140505;
+            --bg-card: #240808;
+            --brand-50: #fff1f2; --brand-100: #ffe4e6;
+            --brand-400: #fb7185; --brand-500: #f43f5e; --brand-600: #e11d48;
+            --accent: #f97316;
+            --cursor-color: #f97316;
+            --text-main: #fecdd3;
+            --text-muted: #fda4af;
+            --gradient-rez: linear-gradient(to right, #f43f5e, #f97316, #fbbf24);
+            --view-count-color: #f97316;
+            --glass-bg: rgba(36, 8, 8, 0.7);
+            --glass-border: rgba(244, 63, 94, 0.2);
+        }
+
+        html[data-theme="dark"], body[data-theme="dark"] {
             --bg-main: #030303;
             --bg-card: #0A0A0A;
             --brand-50: #eff6ff; --brand-100: #dbeafe;
@@ -106,19 +122,34 @@
             --glass-border: rgba(168, 85, 247, 0.2);
         }
 
-        html[data-theme="fire"], body[data-theme="fire"] {
-            --bg-main: #140505;
-            --bg-card: #240808;
-            --brand-50: #fff1f2; --brand-100: #ffe4e6;
-            --brand-400: #fb7185; --brand-500: #f43f5e; --brand-600: #e11d48;
-            --accent: #f97316;
-            --cursor-color: #f97316;
-            --text-main: #fecdd3;
-            --text-muted: #fda4af;
-            --gradient-rez: linear-gradient(to right, #f43f5e, #f97316, #fbbf24);
-            --view-count-color: #f97316;
-            --glass-bg: rgba(36, 8, 8, 0.7);
-            --glass-border: rgba(244, 63, 94, 0.2);
+        html[data-theme="cyber"], body[data-theme="cyber"] {
+            --bg-main: #0f0f13;
+            --bg-card: #181820;
+            --brand-50: #fefce8; --brand-100: #fef9c3;
+            --brand-400: #facc15; --brand-500: #eab308; --brand-600: #ca8a04;
+            --accent: #06b6d4;
+            --cursor-color: #eab308;
+            --text-main: #fef08a;
+            --text-muted: #a1a1aa;
+            --gradient-rez: linear-gradient(to right, #eab308, #06b6d4, #ec4899);
+            --view-count-color: #eab308;
+            --glass-bg: rgba(24, 24, 32, 0.7);
+            --glass-border: rgba(234, 179, 8, 0.2);
+        }
+
+        html[data-theme="ocean"], body[data-theme="ocean"] {
+            --bg-main: #020617;
+            --bg-card: #0f172a;
+            --brand-50: #f0fdfa; --brand-100: #ccfbf1;
+            --brand-400: #2dd4bf; --brand-500: #14b8a6; --brand-600: #0d9488;
+            --accent: #3b82f6;
+            --cursor-color: #14b8a6;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --gradient-rez: linear-gradient(to right, #14b8a6, #3b82f6, #8b5cf6);
+            --view-count-color: #14b8a6;
+            --glass-bg: rgba(15, 23, 42, 0.7);
+            --glass-border: rgba(20, 184, 166, 0.2);
         }
 
         /* --- UTILS --- */
@@ -161,6 +192,7 @@
             cursor: grabbing !important;
         }
 
+        /* Allow AOS animations to complete in edit mode without glitching grids */
         body.edit-mode [data-aos] {
             opacity: 1 !important;
             transform: none !important;
@@ -168,7 +200,7 @@
         }
 
         .grid-stack-placeholder > .placeholder-content {
-            background-color: rgba(59, 130, 246, 0.05) !important;
+            background-color: rgba(var(--brand-500), 0.05) !important;
             border: 2px dashed var(--brand-500) !important;
             border-radius: 2rem !important;
             opacity: 0.5 !important;
@@ -186,25 +218,23 @@
         .scanline-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.1) 51%); background-size: 100% 4px; z-index: 99; pointer-events: none; }
         .bg-mesh { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(at 0% 0%, var(--brand-500) 0, transparent 50%), radial-gradient(at 100% 100%, var(--accent) 0, transparent 50%); opacity: 0.15; z-index: -1; }
         
-       .cursor-dot { 
+        .cursor-dot { 
             width: 8px; height: 8px; background: var(--cursor-color); 
             position: fixed; top: 0; left: 0; border-radius: 50%; 
             z-index: 999999; pointer-events: none; 
             will-change: transform; 
-            /* No CSS transition here to prevent lag */
         }
         .cursor-trail { 
             width: 44px; height: 44px; border: 2px solid var(--cursor-color); 
             position: fixed; top: 0; left: 0; border-radius: 50%; 
             z-index: 999998; pointer-events: none; 
-            transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), height 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s, border-color 0.3s, transform 0.1s; 
+            transition: background-color 0.3s, border-color 0.3s; 
             will-change: transform;
         }
         
         /* Smooth magnetic hover states */
         body.hovering .cursor-dot { opacity: 0; }
         body.hovering .cursor-trail { 
-            width: 65px; height: 65px; 
             background: rgba(255, 255, 255, 0.1); 
             border-color: var(--accent); 
             backdrop-filter: blur(4px); 
@@ -212,13 +242,13 @@
 
         /* Custom text editing cursor */
         body.text-hovering .cursor-dot {
-    width: 2px !important;
-    height: 24px !important;
-    border-radius: 0 !important;
-    background: var(--brand-500) !important;
-    opacity: 1 !important;
-    animation: textBlink 1s infinite;
-}
+            width: 2px !important;
+            height: 24px !important;
+            border-radius: 0 !important;
+            background: var(--brand-500) !important;
+            opacity: 1 !important;
+            animation: textBlink 1s infinite;
+        }
         body.text-hovering .cursor-trail {
             opacity: 0 !important;
         }
@@ -241,13 +271,13 @@
         #confirmModal.hidden { opacity: 0; pointer-events: none; transform: scale(0.95); }
         #confirmModal:not(.hidden) { opacity: 1; pointer-events: auto; transform: scale(1); }
         
-    img {
-    -webkit-user-drag: none;
-    -khtml-user-drag: none;
-    -moz-user-drag: none;
-    -o-user-drag: none;
-    user-select: none;
-}
+        img {
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-select: none;
+        }
     </style>
 </head>
 <body class="antialiased selection:bg-brand-500 selection:text-white" data-theme="">
@@ -499,7 +529,7 @@
 
     <section id="home" class="relative pt-32 pb-20 px-6 min-h-screen max-h-[1080px] flex flex-col justify-center">
         <div class="max-w-7xl mx-auto w-full grid lg:grid-cols-12 gap-12 items-center">
-            <div class="lg:col-span-7" data-aos="fade-right">
+            <div class="lg:col-span-7" data-aos="fade-up" data-aos-duration="1000">
                 <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8">
                     <span class="relative flex h-2 w-2">
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
@@ -520,7 +550,7 @@
                 </div>
             </div>
 
-            <div class="lg:col-span-5 relative" data-aos="zoom-in" data-aos-delay="200">
+            <div class="lg:col-span-5 relative" data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000">
                 <div class="relative z-10 animate-float">
                     <div class="w-full aspect-square rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl">
                         <img id="main-pfp" src="https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80" onerror="this.src='https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80'" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000">
@@ -554,7 +584,7 @@
                              <div class="relative group">
                                 <button onclick="toggleVolumeSlider()" class="interactable text-gray-500 hover:text-[var(--text-main)] text-[10px]"><i class="fa-solid fa-volume-high"></i></button>
                                 <div id="volume-popup" class="absolute bottom-full right-0 mb-3 w-8 h-40 bg-dark border border-white/10 rounded-full flex justify-center items-end py-4 shadow-xl opacity-0 pointer-events-none transition-all duration-300 transform translate-y-2 z-50">
-                                    <input type="range" min="0" max="100" value="10" oninput="setVolume(this.value)" class="interactable vertical-slider" style="writing-mode: vertical-lr; direction: rtl; -webkit-appearance: slider-vertical;">
+                                    <input type="range" min="0" max="100" value="10" oninput="setVolume(this.value)" class="interactable vertical-slider" style="writing-mode: vertical-lr; direction: rtl;">
                                 </div>
                              </div>
                         </div>
@@ -573,7 +603,7 @@
     <section id="work" class="py-32 px-6">
         <div class="max-w-7xl mx-auto">
             <div class="flex flex-col md:flex-row items-end justify-between mb-20 gap-8">
-                <div>
+                <div data-aos="fade-up">
                     <h2 class="text-4xl md:text-6xl font-black tracking-tighter uppercase mb-4">The Vault</h2>
                     <p class="text-[var(--text-muted)] font-mono text-sm tracking-widest uppercase">Archive // 2024 - 2026</p>
                 </div>
@@ -586,7 +616,7 @@
 
     <section id="reviews" class="py-32 px-6 relative bg-white/[0.02]">
         <div class="max-w-7xl mx-auto">
-            <h2 class="text-3xl font-bold mb-16 flex items-center gap-6">
+            <h2 class="text-3xl font-bold mb-16 flex items-center gap-6" data-aos="fade-up">
                 Client Intel 
                 <span id="review-count-badge" class="w-8 h-8 flex items-center justify-center bg-brand-500 text-[10px] rounded-full text-white font-mono">00</span>
             </h2>
@@ -596,7 +626,7 @@
 
     <section id="pricing" class="py-32 px-6">
         <div class="max-w-7xl mx-auto">
-            <div class="text-center max-w-2xl mx-auto mb-20">
+            <div class="text-center max-w-2xl mx-auto mb-20" data-aos="fade-up">
                 <h2 class="text-4xl font-bold mb-6">Service Protocols</h2>
                 <p class="text-[var(--text-muted)]">Select an acquisition tier to initiate development.</p>
             </div>
@@ -644,8 +674,8 @@
 
         document.body.addEventListener('mousedown', () => {
             if(!document.body.classList.contains('text-hovering')) {
-                cursorDot.style.transform = `translate(${dotX}px, ${dotY}px) translate(-50%, -50%) scale(0.5)`;
-                cursorTrail.style.transform = `translate(${trailX}px, ${trailY}px) translate(-50%, -50%) scale(0.8)`;
+                cursorDot.style.transform = `translate3d(${dotX}px, ${dotY}px, 0) translate(-50%, -50%) scale(0.5)`;
+                cursorTrail.style.transform = `translate3d(${trailX}px, ${trailY}px, 0) translate(-50%, -50%) scale(0.8)`;
             }
         });
 
@@ -665,36 +695,36 @@
             }
         });
 
-       function animateCursor() {
-    dotX = mouseX;
-    dotY = mouseY;
-    
-    trailX += (mouseX - trailX) * 0.15;
-    trailY += (mouseY - trailY) * 0.15;
+        function animateCursor() {
+            // Smooth lerp for dot
+            dotX += (mouseX - dotX) * 0.4;
+            dotY += (mouseY - dotY) * 0.4;
+            
+            // Smooth lerp for trail
+            trailX += (mouseX - trailX) * 0.15;
+            trailY += (mouseY - trailY) * 0.15;
 
-    const dx = mouseX - trailX;
-    const dy = mouseY - trailY;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    
-    const stretch = Math.min(1 + distance * 0.004, 1.8);
-    const squish = Math.max(1 - distance * 0.002, 0.7);
-    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+            const dx = mouseX - trailX;
+            const dy = mouseY - trailY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            const stretch = Math.max(1, Math.min(1.5, 1 + distance * 0.005));
+            const angle = Math.atan2(dy, dx) * (180 / Math.PI);
 
-    // Coordinate tracking is now independent of the ':active' state
-    if(!document.body.classList.contains('text-hovering')) {
-        cursorDot.style.transform = `translate(${dotX}px, ${dotY}px) translate(-50%, -50%)`;
-    } else {
-        cursorDot.style.transform = `translate(${dotX}px, ${dotY}px) translate(-50%, -50%) scale(1)`;
-    }
+            if(!document.body.classList.contains('text-hovering')) {
+                cursorDot.style.transform = `translate3d(${dotX}px, ${dotY}px, 0) translate(-50%, -50%)`;
+            } else {
+                cursorDot.style.transform = `translate3d(${dotX}px, ${dotY}px, 0) translate(-50%, -50%) scale(1.5)`;
+            }
 
-    if (document.body.classList.contains('hovering') || document.body.classList.contains('text-hovering')) {
-        cursorTrail.style.transform = `translate(${trailX}px, ${trailY}px) translate(-50%, -50%) scale(1)`;
-    } else {
-        cursorTrail.style.transform = `translate(${trailX}px, ${trailY}px) translate(-50%, -50%) rotate(${angle}deg) scaleX(${stretch}) scaleY(${squish})`;
-    }
+            if (document.body.classList.contains('hovering') || document.body.classList.contains('text-hovering')) {
+                cursorTrail.style.transform = `translate3d(${trailX}px, ${trailY}px, 0) translate(-50%, -50%) scale(1.3)`;
+            } else {
+                cursorTrail.style.transform = `translate3d(${trailX}px, ${trailY}px, 0) translate(-50%, -50%) rotate(${angle}deg) scaleX(${stretch})`;
+            }
 
-    requestAnimationFrame(animateCursor);
-}
+            requestAnimationFrame(animateCursor);
+        }
         animateCursor();
 
         // --- TYPEWRITER EFFECT ---
@@ -762,7 +792,7 @@
         let allProjects = [], allReviews = [], allMusic = [], allPricing = [];
         let projectGrid, reviewGrid, pricingGrid; 
         const audio = document.getElementById('audio');
-        const themes = [null, 'snow', 'toxic', 'fire']; 
+        const themes = [null, 'dark', 'snow', 'toxic', 'cyber', 'ocean']; 
         let currentThemeIndex = 0;
 
         const savedThemeStr = localStorage.getItem('axel_theme');
@@ -794,12 +824,18 @@
             } else if (theme === 'toxic') {
                 favicon.href = "/favicon.ico?v=3";
                 icon.className = "fa-solid fa-biohazard text-[var(--brand-500)]";
-            } else if (theme === 'fire') {
+            } else if (theme === 'cyber') {
                 favicon.href = "/favicon.ico?v=3";
-                icon.className = "fa-solid fa-fire text-[var(--brand-500)]";
-            } else {
+                icon.className = "fa-solid fa-bolt text-[var(--brand-500)]";
+            } else if (theme === 'ocean') {
+                favicon.href = "/favicon.ico?v=3";
+                icon.className = "fa-solid fa-water text-[var(--brand-500)]";
+            } else if (theme === 'dark') {
                 favicon.href = "/favicon.ico?v=3";
                 icon.className = "fa-solid fa-moon text-[var(--brand-500)]";
+            } else {
+                favicon.href = "/favicon.ico?v=3";
+                icon.className = "fa-solid fa-fire text-[var(--brand-500)]";
             }
         }
 
@@ -834,15 +870,19 @@
                 await loadProjects();
                 await loadReviews();
                 await loadPricing(); 
+                
                 const auth = await fetch('/api/me').then(r => r.json()).catch(() => ({ isAdmin: false }));
                 renderAuth(auth.isAdmin);
-                const settings = await fetch('/api/settings').then(r => r.json());
+                
+                const settings = await fetch('/api/settings').then(r => r.json()).catch(() => ({}));
                 if(settings.pfp) {
                     document.getElementById('main-pfp').src = settings.pfp;
                     document.getElementById('current-pfp-preview').src = settings.pfp;
                 }
-                const views = await fetch('/api/view').then(r => r.json());
+                
+                const views = await fetch('/api/view').then(r => r.json()).catch(() => ({ count: '---' }));
                 document.getElementById('viewCount').innerText = views.count.toLocaleString();
+                
                 loadTrack(0, false);
             } catch(e) { console.warn("System Offline", e); }
         }
@@ -851,7 +891,7 @@
             const container = document.getElementById('authContainer');
             const themeBtn = `
                 <button onclick="cycleTheme()" class="interactable w-8 h-8 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
-                    <i id="theme-icon" class="fa-solid fa-moon text-[var(--brand-500)]"></i>
+                    <i id="theme-icon" class="fa-solid fa-fire text-[var(--brand-500)]"></i>
                 </button>
             `;
             if(isAdmin) {
@@ -861,13 +901,16 @@
                     <button onclick="toggleAdmin()" class="px-5 py-2 glass rounded-full text-[10px] font-black text-brand-500 tracking-widest border-brand-500/20 hover:bg-brand-500 hover:text-white transition-all interactable">ROOT</button>
                 `;
                 renderAdminLists();
+                
                 const icon = document.getElementById('theme-icon');
                 if(icon) {
                      const theme = themes[currentThemeIndex];
                      if (theme === 'snow') icon.className = "fa-solid fa-snowflake text-[var(--brand-500)]";
                      else if (theme === 'toxic') icon.className = "fa-solid fa-biohazard text-[var(--brand-500)]";
-                     else if (theme === 'fire') icon.className = "fa-solid fa-fire text-[var(--brand-500)]";
-                     else icon.className = "fa-solid fa-moon text-[var(--brand-500)]";
+                     else if (theme === 'cyber') icon.className = "fa-solid fa-bolt text-[var(--brand-500)]";
+                     else if (theme === 'ocean') icon.className = "fa-solid fa-water text-[var(--brand-500)]";
+                     else if (theme === 'dark') icon.className = "fa-solid fa-moon text-[var(--brand-500)]";
+                     else icon.className = "fa-solid fa-fire text-[var(--brand-500)]";
                 }
             } else {
                 container.innerHTML = `
@@ -952,32 +995,29 @@
                 btn.classList.remove('bg-brand-500', 'text-white');
                 btn.innerText = "EDIT LAYOUT";
                 body.classList.remove('edit-mode');
-                
-                setTimeout(() => AOS.refresh(), 100);
             }
         }
 
         async function saveOrder(type) {
-    const grid = type === 'projects' ? projectGrid : type === 'reviews' ? reviewGrid : pricingGrid;
-    if(!grid) return;
-    
-    // Pull from engine.nodes to reliably capture 'w' and 'h'
-    const layoutData = grid.engine.nodes.map(node => ({
-        id: node.id,
-        x: node.x,
-        y: node.y,
-        w: node.w,
-        h: node.h
-    })).filter(item => item.id);
-    
-    try {
-        await fetch(`/api/${type}/reorder`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(layoutData)
-        });
-    } catch(e) { console.error("Save order failed", e); }
-}
+            const grid = type === 'projects' ? projectGrid : type === 'reviews' ? reviewGrid : pricingGrid;
+            if(!grid) return;
+            
+            const layoutData = grid.engine.nodes.map(node => ({
+                id: node.id,
+                x: node.x,
+                y: node.y,
+                w: node.w,
+                h: node.h
+            })).filter(item => item.id);
+            
+            try {
+                await fetch(`/api/${type}/reorder`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(layoutData)
+                });
+            } catch(e) { console.error("Save order failed", e); }
+        }
 
         // --- FULLSCREEN MODAL ---
         function openModal(imgSrc) {
@@ -1007,8 +1047,7 @@
 
             document.getElementById('past-work-grid').innerHTML = allProjects.map((p, i) => {
                 let layout = p.layout || { w: 4, h: 4 };
-                // Using GridStack native auto-position if coordinates aren't saved yet
-                let posAttrs = (layout.x !== undefined && layout.y !== undefined) ? `gs-x="${layout.x}" gs-y="${layout.y}"` : ``;
+                let posAttrs = (layout.x !== undefined && layout.y !== undefined) ? `gs-x="${layout.x}" gs-y="${layout.y}"` : `gs-auto-position="true"`;
                 
                 return `
                 <div class="grid-stack-item" gs-id="${p.id}" gs-w="${layout.w}" gs-h="${layout.h}" ${posAttrs}>
@@ -1023,9 +1062,8 @@
                 </div>`;
             }).join('');
             
-            projectGrid = GridStack.init({ staticGrid: true, cellHeight: 80, margin: 20, animate: true }, '#past-work-grid');
+            projectGrid = GridStack.init({ staticGrid: true, cellHeight: 80, margin: 20, animate: true, float: true, column: 12 }, '#past-work-grid');
             renderAdminLists();
-            setTimeout(() => AOS.refresh(), 100);
         }
 
         async function loadReviews() {
@@ -1036,12 +1074,12 @@
             if(reviewGrid) reviewGrid.destroy(false);
 
             document.getElementById('reviews-grid').innerHTML = display.map((r, i) => {
-                let layout = r.layout || { w: 4, h: 3 };
-                let posAttrs = (layout.x !== undefined && layout.y !== undefined) ? `gs-x="${layout.x}" gs-y="${layout.y}"` : ``;
+                let layout = r.layout || { w: 4, h: 4 }; 
+                let posAttrs = (layout.x !== undefined && layout.y !== undefined) ? `gs-x="${layout.x}" gs-y="${layout.y}"` : `gs-auto-position="true"`;
                 
                 return `
                 <div class="grid-stack-item" gs-id="${r.id}" gs-w="${layout.w}" gs-h="${layout.h}" ${posAttrs}>
-                    <div class="grid-stack-item-content glass p-8 rounded-[2rem] border border-white/5 flex flex-col h-full relative">
+                    <div class="grid-stack-item-content glass px-8 py-10 rounded-[2rem] border border-white/5 flex flex-col h-full relative">
                         <div class="absolute top-8 left-8 text-[9px] font-mono text-gray-500 opacity-50">${r.date || 'RECENT'}</div>
                         <div class="flex items-center gap-4 mb-6 mt-6 pointer-events-none">
                             <img src="${r.avatar}" class="w-10 h-10 rounded-full object-cover bg-white/5">
@@ -1050,19 +1088,21 @@
                                 <div class="text-brand-500 text-[9px] gap-1 flex">${'<i class="fa-solid fa-star"></i>'.repeat(r.stars)}</div>
                             </div>
                         </div>
-                        <p class="text-[var(--text-main)] font-medium leading-relaxed flex-1 text-sm pointer-events-none">"${r.feedback}"</p>
+                        <div class="flex-1 overflow-y-auto w-full pr-2 pb-2 custom-scroll">
+                             <p class="text-[var(--text-main)] font-medium leading-relaxed text-sm pointer-events-none">"${r.feedback}"</p>
+                        </div>
                     </div>
                 </div>`;
             }).join('');
 
-            reviewGrid = GridStack.init({ staticGrid: true, cellHeight: 80, margin: 20, animate: true }, '#reviews-grid');
+            reviewGrid = GridStack.init({ staticGrid: true, cellHeight: 80, margin: 24, animate: true, float: true, column: 12 }, '#reviews-grid');
             renderAdminLists();
-            setTimeout(() => AOS.refresh(), 100);
         }
 
         async function loadMusic() {
             allMusic = await fetch('/api/music').then(r => r.json()).catch(()=>[]);
             playlist = allMusic.length ? allMusic : [{ title: "CYBERPUNK", artist: "Hyper", cover: "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80", file: "" }];
+            playlist = playlist.sort(() => Math.random() - 0.5);
         }
 
         async function loadPricing() {
@@ -1083,7 +1123,7 @@
                 const perksHtml = perksArray.map(perk => `<li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500"></i> ${perk}</li>`).join('');
 
                 let layout = p.layout || { w: 4, h: 7 };
-                let posAttrs = (layout.x !== undefined && layout.y !== undefined) ? `gs-x="${layout.x}" gs-y="${layout.y}"` : ``;
+                let posAttrs = (layout.x !== undefined && layout.y !== undefined) ? `gs-x="${layout.x}" gs-y="${layout.y}"` : `gs-auto-position="true"`;
 
                 let innerContent = '';
                 if(p.isElite) {
@@ -1127,7 +1167,7 @@
                 </div>`;
             }).join('');
             
-            pricingGrid = GridStack.init({ staticGrid: true, cellHeight: 80, margin: 20, animate: true }, '#pricing-grid');
+            pricingGrid = GridStack.init({ staticGrid: true, cellHeight: 80, margin: 20, animate: true, float: true, column: 12 }, '#pricing-grid');
             renderAdminLists();
         }
 
@@ -1302,8 +1342,6 @@
                     data.isElite = formData.has('isElite');
                     
                     if (data.edit_id) {
-                        // FIX FOR 404 Cannot PUT error. 
-                        // Simulate an edit by Deleting the old one and Creating a new one.
                         await fetch(`/api/pricing/${data.edit_id}`, { method: 'DELETE' });
                         delete data.edit_id;
                     }
