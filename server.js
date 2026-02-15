@@ -75,7 +75,7 @@ const Music = mongoose.model('Music', new mongoose.Schema({
     order: { type: Number, default: 0 } 
 }));
 
-// NEW: Pricing Schema
+// UPDATED: Pricing Schema now includes layout coordinates and sizes
 const Pricing = mongoose.model('Pricing', new mongoose.Schema({
     tier: String,
     title: String,
@@ -84,7 +84,13 @@ const Pricing = mongoose.model('Pricing', new mongoose.Schema({
     perks: String,
     isElite: { type: Boolean, default: false },
     link: String,
-    order: { type: Number, default: 0 }
+    order: { type: Number, default: 0 },
+    layout: { 
+        x: Number, 
+        y: Number, 
+        w: { type: Number, default: 4 }, 
+        h: { type: Number, default: 7 } 
+    }
 }));
 
 const Setting = mongoose.model('Setting', new mongoose.Schema({ 
@@ -214,7 +220,6 @@ app.post('/api/settings/pfp', requireAdmin, upload.single('pfp'), async (req, re
 // 2. PROJECTS
 app.get('/api/projects', async (req, res) => {
     const projects = await Project.find().sort({ order: 1 });
-    // Make sure we pass the layout object to the frontend
     res.json(projects.map(p => ({ id: p._id, title: p.title, image: p.image, layout: p.layout })));
 });
 
@@ -233,7 +238,6 @@ app.delete('/api/projects/:id', requireAdmin, async (req, res) => {
 });
 
 app.put('/api/projects/reorder', requireAdmin, async (req, res) => {
-    // Update both the order index AND the specific layout data from GridStack
     const ops = req.body.map((item, index) => ({ 
         updateOne: { 
             filter: { _id: item.id }, 
@@ -257,7 +261,7 @@ app.get('/api/reviews', async (req, res) => {
         stars: r.stars, 
         date: r.date,
         avatar: r.avatar,
-        layout: r.layout // Explicitly sending the layout object to the frontend
+        layout: r.layout 
     })));
 });
 
@@ -285,8 +289,8 @@ app.put('/api/reviews/reorder', requireAdmin, async (req, res) => {
                     order: index, 
                     'layout.x': item.x, 
                     'layout.y': item.y, 
-                    'layout.w': item.w || 4, // Fallback to schema default if frontend misses it
-                    'layout.h': item.h || 3  // Fallback to schema default
+                    'layout.w': item.w || 4, 
+                    'layout.h': item.h || 3  
                 }
             } 
         } 
@@ -343,7 +347,7 @@ app.put('/api/music/reorder', requireAdmin, async (req, res) => {
     res.json({ success: true });
 });
 
-// 5. PRICING (NEW)
+// 5. PRICING (UPDATED: Now handles layouts)
 app.get('/api/pricing', async (req, res) => {
     const pricing = await Pricing.find().sort({ order: 1 });
     res.json(pricing.map(p => ({ ...p._doc, id: p._id })));
@@ -376,7 +380,18 @@ app.delete('/api/pricing/:id', requireAdmin, async (req, res) => {
 
 app.put('/api/pricing/reorder', requireAdmin, async (req, res) => {
     const ops = req.body.map((item, index) => ({ 
-        updateOne: { filter: { _id: item.id }, update: { order: index } } 
+        updateOne: { 
+            filter: { _id: item.id }, 
+            update: { 
+                $set: {
+                    order: index, 
+                    'layout.x': item.x, 
+                    'layout.y': item.y, 
+                    'layout.w': item.w || 4, // Prevents elements from collapsing if data is missing
+                    'layout.h': item.h || 7  
+                }
+            } 
+        } 
     }));
     await Pricing.bulkWrite(ops);
     res.json({ success: true });
